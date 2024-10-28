@@ -6,15 +6,13 @@
 //       console.error(`ERROR: ${message}`);
 //     }
 //   };
-  
+
 // Remove this line or replace it with the correct import if available
 // import { ILoggerService } from '@frmscoe/frms-coe-startup-lib';
-import { ILoggerService } from './logger-service.interface';  // Custom interface
+import { ILoggerService } from './logger-service.interface'; // Custom interface
 
 export class CustomLoggerService implements ILoggerService {
-  
   log(message: string): void {
-    
     console.log(`INFO: ${message}`);
   }
   warn(message: string): void {
@@ -24,8 +22,3 @@ export class CustomLoggerService implements ILoggerService {
     console.error(`ERROR: ${message}`);
   }
 }
-
-
-
-
-

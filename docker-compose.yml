@@ -9,7 +9,7 @@ services:
       - nats-server2
       - rabbitmq
     ports:
-      - "3000:3000"  # Exposing the relay service API
+      - '3000:3000' # Exposing the relay service API
     networks:
       - relay-network
     entrypoint: sh -c "sleep 10 && npm start"
@@ -17,30 +17,29 @@ services:
   nats-server:
     image: nats:latest
     ports:
-      - "4222:4222"  # Exposing port 4222
+      - '4222:4222' # Exposing port 4222
     environment:
-      - NATS_PORT=4222  # Ensuring the internal NATS port matches
+      - NATS_PORT=4222 # Ensuring the internal NATS port matches
     networks:
       - relay-network
 
   nats-server2:
     image: nats:latest
     ports:
-      - "4223:4223"  # Exposing port 4223
+      - '4223:4223' # Exposing port 4223
     environment:
-      - NATS_PORT=4223  # Set the internal NATS port to 4223
-    command: "-p 4223"  # Make NATS run on the specified port internally
+      - NATS_PORT=4223 # Set the internal NATS port to 4223
+    command: '-p 4223' # Make NATS run on the specified port internally
     networks:
       - relay-network
 
   rabbitmq:
     image: rabbitmq:management
     ports:
-      - "5672:5672"     # RabbitMQ AMQP port
-      - "15672:15672"   # RabbitMQ management port
+      - '5672:5672' # RabbitMQ AMQP port
+      - '15672:15672' # RabbitMQ management port
     networks:
       - relay-network
-
 
 networks:
   relay-network:
