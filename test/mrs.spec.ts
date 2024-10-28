@@ -158,8 +158,7 @@ describe('MessageRelayService', () => {
     });
     jest.runAllTimers();
     expect(loggerSpy).toHaveBeenCalledWith(
-      '[TRS]: Connected to Client NATS: ',
-      JSON.stringify(mockNatsConnection.info, null, 4),
+      `[TRS]: Connected to Client NATS: ${JSON.stringify(mockNatsConnection.info, null, 4)}`,
       config.functionName,
       undefined,
     );
