@@ -157,8 +157,12 @@ describe('MessageRelayService', () => {
       servers: config.destinationUrl,
     });
     jest.runAllTimers();
-    expect(loggerSpy).toHaveBeenCalledWith(JSON.stringify(mockNatsConnection.info, null, 4), config.functionName, undefined);
-    expect(loggerSpy).toHaveBeenCalledWith('[TRS]: Connected to Client NATS', config.functionName, undefined);
+    expect(loggerSpy).toHaveBeenCalledWith(
+      '[TRS]: Connected to Client NATS: ',
+      JSON.stringify(mockNatsConnection.info, null, 4),
+      config.functionName,
+      undefined,
+    );
     expect(result).toBe(true);
     jest.useRealTimers();
   });
