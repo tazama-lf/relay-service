@@ -1,5 +1,5 @@
 // Developed By Paysys Labs
-
+import './apm';
 import { StartupFactory } from '@tazama-lf/frms-coe-startup-lib';
 import { additionalEnvironmentVariables, type Configuration } from './config';
 import { validateProcessorConfig } from '@tazama-lf/frms-coe-lib/lib/config/processor.config';
@@ -39,7 +39,7 @@ async function startRelayServices(): Promise<void> {
       break;
   }
   /* eslint-enable no-case-declarations -- reenable */
-  await relayService.init(execute, loggerService, ['relay']);
+  await relayService.init(execute, loggerService);
 
   //  await relayService.start();
 }
