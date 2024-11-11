@@ -10,7 +10,7 @@ import { type IRelay } from '@tazama-lf/frms-coe-startup-lib/lib/interfaces/iRel
 import { execute } from './services/execute';
 import { LoggerService } from '@tazama-lf/frms-coe-lib';
 
-const configuration = validateProcessorConfig(additionalEnvironmentVariables) as Configuration;
+export const configuration = validateProcessorConfig(additionalEnvironmentVariables) as Configuration;
 export const loggerService: LoggerService = new LoggerService(configuration);
 
 export let relay: IRelay;
@@ -40,8 +40,6 @@ async function startRelayServices(): Promise<void> {
   }
   /* eslint-enable no-case-declarations -- reenable */
   await relayService.init(execute, loggerService);
-
-  //  await relayService.start();
 }
 
 startRelayServices();
