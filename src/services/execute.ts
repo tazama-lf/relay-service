@@ -16,7 +16,7 @@ export const execute = async (reqObj: any): Promise<void> => {
     await relay.relay(messageBuffer);
     span?.end();
   } catch (error) {
-    loogerService.error(error);
+    loggerService.error(error as Error);
   } finally {
     apmTransaction?.end();
   }

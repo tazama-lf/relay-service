@@ -43,14 +43,14 @@ jest.mock('@tazama-lf/frms-coe-startup-lib/lib/services/rabbitMQRelayService', (
   };
 });
 
-jest.mock('@tazama-lf/frms-coe-lib/lib/helpers/protobuf', () => {
-  return {
-    create: jest.fn(),
-    encode: jest.fn(() => ({
-      finish: jest.fn(),
-    })),
-  };
-});
+const mock = jest.createMockFromModule('@tazama-lf/frms-coe-lib/lib/helpers/protobuf');
+
+// jest.mock('@tazama-lf/frms-coe-lib/lib/helpers/protobuf', () => ({
+//     create: jest.fn().mockReturnValue(12),
+//     encode: jest.fn().mockReturnValue({
+//       finish: jest.fn()
+//     }),
+// }));
 
 const getMockTransaction = () => {
   const jquote = JSON.parse(
@@ -63,6 +63,7 @@ const getMockTransaction = () => {
 // Setting up suite
 describe('MessageRelayService', () => {
   let responseSpy: jest.SpyInstance;
+
   // Clear all mocks
   afterEach(() => {
     jest.clearAllMocks();

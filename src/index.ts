@@ -39,7 +39,9 @@ async function startRelayServices(): Promise<void> {
       break;
   }
   /* eslint-enable no-case-declarations -- reenable */
-  await relayService.init(execute, loggerService);
+  if (configuration.nodeEnv !== 'test') {
+    await relayService.init(execute, loggerService);
+  }
 }
 
 startRelayServices();
