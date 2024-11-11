@@ -31,7 +31,14 @@ ENV CONSUMER_STREAM=interdiction-service
 ENV DESTINATION_TYPE=nats
 ENV DESTINATION_URL=nats://localhost:4223
 ENV QUEUE=messageRelayService
-ENV SUBSCRIBERS=500
+
+ENV APM_ACTIVE=true
+ENV APM_SERVICE_NAME=relay-service
+ENV APM_URL=http://apm-server.development.svc.cluster.local:8200/
+ENV APM_SECRET_TOKEN=
+
+ENV LOGSTASH_LEVEL='info'
+ENV SIDECAR_HOST=0.0.0.0:5000
 
 # Expose the port the app runs on
 EXPOSE 3000
