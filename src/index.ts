@@ -21,19 +21,19 @@ async function startRelayServices(): Promise<void> {
   /* eslint-disable no-case-declarations -- create separate instances */
   switch (configuration.DESTINATION_TYPE) {
     case 'nats':
-      const a = new NatsRelay();
-      await a.init();
-      relay = a;
+      const nats = new NatsRelay();
+      await nats.init();
+      relay = nats;
       break;
     case 'rest':
-      const b = new RestRelay();
-      await b.init();
-      relay = b;
+      const rest = new RestRelay();
+      await rest.init();
+      relay = rest;
       break;
     case 'rabbitmq':
-      const c = new RabbitRelay();
-      await c.init({ functionName: configuration.functionName, maxCPU: configuration.maxCPU, nodeEnv: configuration.nodeEnv });
-      relay = c;
+      const rabbit = new RabbitRelay();
+      await rabbit.init({ functionName: configuration.functionName, maxCPU: configuration.maxCPU, nodeEnv: configuration.nodeEnv });
+      relay = rabbit;
       break;
     default:
       break;
