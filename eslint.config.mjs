@@ -43,6 +43,6 @@ export default [
       '@stylistic/quote-props': ['warn', 'as-needed'],
       '@stylistic/arrow-parens': ['warn', 'always'],
     },
-    ignores: ['**/coverage/**', '**/templates/**', '**/dist/**', '**/node_modules/**', '**/docs/**', '**/test/**', '**/src/utils/**'],
+    ignores: ['**/coverage/**', '**/templates/**', '**/dist/**', '**/node_modules/**', '**/docs/**', '**/test/**', '**/src/utils/**', '**/jest.*.ts', '**/__tests__/**'],
   },
 ];
