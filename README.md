@@ -36,7 +36,7 @@ This service acts as an intermediary, reading messages from a NATS server and fo
 
 ### 1.2 Features
 
-- Supports multiple input sources: NATS
+- Consumes NATS messages
 - Compatible with various output destinations: RabbitMQ, REST API, and NATS
 - Built using TypeScript for enhanced type safety and maintainability
 - Designed specifically for financial risk management and transaction processing scenarios
@@ -47,43 +47,15 @@ The Message Relaying Service offers several core functions that work together to
 
 - ### Start Function
 
-typescript start: () => Promise<boolean>
+typescript startRelayServices: () => Promise<boolean>
 
-The `start` function initializes the service by setting up subscribers to read messages from the configured input source. After successful initialization, it calls the `relayMessage` function to begin the message forwarding process.
-
-- ### Initialize Producer Function
-
-typescript initProducer: () => Promise<boolean>
-
-This function is responsible for setting up a producer connection based on the destination type specified in the configuration (`config.destinationType`). The function supports three destination types: NATS, RabbitMQ, and REST API. It establishes the appropriate connection and prepares the service for relaying messages to the destination.
+The `startRelayServices` function initializes the service by setting up subscribers to read messages from the configured input source; leveraging [`frms-coe-startup-lib`](https://github.com/tazama-lf/frms-coe-startup-lib). After successful initialization, an `execute` function is provided (with a custom implementation) to be called whenever a NATS message is received. Ultimately, it is this `execute` function which will call the `relay` method to forward your message to the destination set in your environment
 
 - ### Relay Message Function
 
-typescript relayMessage: (message: Uint8Array) => Promise<void>
+typescript relay: (message: Uint8Array) => Promise<void>
 
-This function acts as the central hub for message forwarding. It determines the appropriate destination service/messaging queue based on the (`config.destinationType`) and calls the corresponding relay function. Supported destinations include RabbitMQ, NATS, and REST API.
-
-- ### Destination-Specific Relay Functions
-
-The following functions handle the actual forwarding of messages to their respective destinations:
-
-#### 1. Relay to NATS
-
-typescript relayToNats: (message: string) => Promise<boolean>
-
-This function forwards messages to a NATS listener.
-
-#### 2. Relay to RabbitMQ
-
-typescript relayToRabbitMQ: (message: string) => Promise<boolean>
-
-This function sends messages to a RabbitMQ listener.
-
-#### 3. Relay to REST API
-
-typescript relayToRestAPI: (message: string) => Promise<void>
-
-This function forwards messages to an endpoint on a server via REST API.
+This function acts as the central hub for message forwarding. It determines the appropriate destination service/messaging queue based on the (`config.destinationType`) and calls the corresponding relay function. The [`frms-coe-startup-lib`](https://github.com/tazama-lf/frms-coe-startup-lib) supports RabbitMQ, NATS, and REST API.
 
 ## **_2. System Architecture_**
 
@@ -107,7 +79,7 @@ stateDiagram
 
 ## **_3. Configuration_**
 
-The service can be configured through environment variables or a configuration file. Refer to the `.env.template.*` or `/config/index.ts` file based on your requirement for available settings.
+The service can be configured through environment variables or a configuration file. Refer to the `.env.template.*` or `/config.ts` file based on your requirement for available settings.
 
 - ## _Environment Variables_
 
@@ -115,21 +87,13 @@ The service can be configured using the following environment variables:
 
 - ### Init Variables
 
-| Variable      | Description                                            |
-| ------------- | ------------------------------------------------------ |
-| STARTUP_TYPE  | nats                                                   |
-| NODE_ENV      | Node.js environment (e.g., production, development)    |
-| MAX_CPU       | CPU Limit for LoggerService                            |
-| FUNCTION_NAME | Name of the function associated with the relay service |
-
-- ### Consumer Variables
-
-1. #### Nats Consumer Variables
-
-| Variable        | Description                              |
-| --------------- | ---------------------------------------- |
-| CONSUMER_URL    | URL for the NATS consumer                |
-| CONSUMER_STREAM | Name of the stream for the NATS consumer |
+| Variable        | Description                                              |
+| ----------------| ---------------------------------------------------------|
+| STARTUP_TYPE    | nats                                                   |
+| NODE_ENV        | Node.js environment (e.g., production, development)    |
+| MAX_CPU         | CPU Limit for LoggerService                            |
+| FUNCTION_NAME   | Name of the function associated with the relay service |
+| CONSUMER_STREAM | Name of the stream for the NATS consumer               |
 
 - ### Destination Variables
 
@@ -158,11 +122,21 @@ The service can be configured using the following environment variables:
 | JSON_PAYLOAD     | Delivery message as JSON (true/false)          |
 | MAX_SOCKETS      | Max http/https sockets limit (2500 by default) |
 
-- ### General Configuration
+- ### APM Configuration
 
-| Variable    | Description                                    |
-| ----------- | ---------------------------------------------- |
-| SUBSCRIBERS | Number of consumer subs. (Min 500 recommended) |
+| Variable          | Description                                    |
+| ----------------  | ---------------------------------------------- |
+| APM_ACTIVE        | Enables Elastic APM                            |
+| APM_SERVICE       | APM Service name                               |
+| APM_URL           | APM server URL                                 |
+| APM_SECRET_TOKEN  | APM Secret token                               |
+
+- ### Logging Configuration
+
+| Variable         | Description                                                                                  |
+| ---------------  | ----------------------------------------------                                               |
+| LOGSTASH_LEVEL   | Log level                                                                                    |
+| SIDECAR_HOST     | Address that the [event sidecar](https://github.com/tazama-lf/event-sidecar) is listening on |
 
 ## **_4. Deployment Guide_**
 
@@ -171,6 +145,7 @@ The service can be configured using the following environment variables:
 Before starting, ensure the following is in place:
 Docker is installed on your system.
 You have access to the repository that contains the Relay Service code.
+You have `GH_TOKEN` set in your environment.
 
 - ### **Step-by-Step Deployment Instructions:**
 
@@ -186,16 +161,7 @@ git clone <repository-link>
 
 Update the environment configuration file (.env) as per your system's requirements. Make sure to correctly configure any database or service connection details.
 
-#### 4. Create .npmrc File
-
-Create a .npmrc file if you currently do not have. Add the following content:
-
-```bash
-@tazama-lf:registry=https://npm.pkg.github.com
-//npm.pkg.github.com/:_authToken=some-secret
-```
-
-#### 5. Build the Docker Image
+#### 4. Build the Docker Image
 
 Once the environment is configured, build the Docker image using the following command:
 
@@ -203,7 +169,7 @@ Once the environment is configured, build the Docker image using the following c
 docker compose build -t your-image-name
 ```
 
-#### 6. Run the Docker Container
+#### 5. Run the Docker Container
 
 After building the image, start the service in detached mode (in the background) using the command:
 
@@ -213,11 +179,11 @@ docker compose up -d your-image-name
 
 ## **_5. Running the Service_**
 
-Once configured, the service will automatically start reading messages from the specified input source and forwarding them to the designated output destination. This process involves:
+Once configured, the service will automatically start reading messages sent through NATS with the subject configured by `CONSUMER_STREAM` and forwarding them to the designated output destination. This process involves:
 
-1. Calling the `start()` function to initialize subscribers and begin message reading.
-2. Processing incoming messages through the `relayMessage()` function.
-3. Forwarding messages to the appropriate destination using one of the destination-specific relay functions.
+1. Calling the `startRelayServices()` function to initialize subscribers and begin message reading.
+2. Processing incoming messages through the `execute()` function.
+3. Forwarding messages to the appropriate destination using the configured service.
 
 The service continues to operate until manually stopped, continuously monitoring the input source and relaying messages as they arrive.
 
