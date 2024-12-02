@@ -231,8 +231,37 @@ jobs:
           draft: false
           prerelease: false
 
+      - name: Get Latest Release
+        run: |
+          echo "LATEST_RELEASE=$(gh release list --limit 1 | awk '{print $1}')" >> $GITHUB_ENV
+          echo "The latest release tag is $LATEST_RELEASE"
+
       - name: Send Slack Notification
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          curl -X POST -H 'Content-type: application/json' --data '{"blocks": [{"type": "header","text": {"type": "plain_text","text": "New Release Alert :smile::tada:","emoji": true}},{"type": "section","fields": [{"type": "mrkdwn","text": "*Service:*\nFull-Stack-Docker-Tazama"},{"type": "mrkdwn","text": "*Release*\n<https://github.com/tazama-lf/Full-Stack-Docker-Tazama/releases/tag/v2.0.0|Release notes>"}]},{"type": "section","fields": [{"type": "mrkdwn","text": "*Code:*\n<https://github.com/tazama-lf/Full-Stack-Docker-Tazama|Full-Stack-Docker-Tazama Github Repository>"},{"type": "mrkdwn","text": "*Changes:*\n<https://github.com/tazama-lf/Full-Stack-Docker-Tazama/pull/42>"}]}]}' ${{ secrets.SLACK_WEBHOOK_URL }}
+          curl -X POST -H 'Content-type: application/json' --data '{
+            "blocks": [
+              {
+                "type": "header",
+                "text": {
+                  "type": "plain_text",
+                  "text": "New Release Alert :tazama:",
+                  "emoji": true
+                }
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Github Repository:*\nhttps://github.com/${{ github.repository }}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Release:*\n<https://github.com/${{ github.repository }}/releases/tag/${{ env.LATEST_RELEASE }}|Release notes>"
+                  }
+                ]
+              }
+            ]
+          }' ${{ secrets.SLACK_WEBHOOK_URL }}
