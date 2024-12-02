@@ -22,8 +22,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@tazama-lf/frms-coe-lib": "^5.0.0-rc.4",
-    "@tazama-lf/frms-coe-startup-lib": "2.3.0-rc.6",
+    "@tazama-lf/frms-coe-lib": "^5.0.0",
+    "@tazama-lf/frms-coe-startup-lib": "^2.3.0",
     "amqplib": "^0.8.0",
     "axios": "^0.21.4",
     "dotenv": "^16.4.5",
