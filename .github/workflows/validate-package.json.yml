@@ -1,0 +1,55 @@
+name: Validate package.json
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate-package-json:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Validate package.json
+      id: validate-package
+      run: |
+        # Check if package.json exists
+        if [ ! -f package.json ]; then
+          echo "package.json not found!"
+          exit 1
+        fi
+
+        # Validate the required fields
+        REQUIRED_NAME="Tazama"
+        REQUIRED_EMAIL="engineering@tazama.org"
+        REQUIRED_URL="tazama.org"
+
+        NAME=$(jq -r '.name' package.json)
+        EMAIL=$(jq -r '.author.email' package.json)
+        URL=$(jq -r '.author.url' package.json)
+
+        if [ "$NAME" != "$REQUIRED_NAME" ]; then
+          echo "Error: 'name' field in package.json should be '$REQUIRED_NAME', but found '$NAME'"
+          exit 1
+        fi
+
+        if [ "$EMAIL" != "$REQUIRED_EMAIL" ]; then
+          echo "Error: 'email' field in package.json should be '$REQUIRED_EMAIL', but found '$EMAIL'"
+          exit 1
+        fi
+
+        if [ "$URL" != "$REQUIRED_URL" ]; then
+          echo "Error: 'url' field in package.json should be '$REQUIRED_URL', but found '$URL'"
+          exit 1
+        fi
+
+        echo "package.json validation successful!"
+
+    - name: Output validation result
+      run: echo "Validation completed successfully!"
