@@ -43,6 +43,17 @@ jest.mock('@tazama-lf/frms-coe-startup-lib/lib/services/rabbitMQRelayService', (
   };
 });
 
+jest.mock('@tazama-lf/frms-coe-startup-lib/lib/services/GoogleBucketsService', () => {
+  return {
+    GoogleRelay: jest.fn().mockImplementation(() => {
+      return {
+        init: jest.fn(() => {}),
+        relay: jest.fn(() => {}),
+      };
+    }),
+  };
+});
+
 const mock = jest.createMockFromModule('@tazama-lf/frms-coe-lib/lib/helpers/protobuf');
 
 // jest.mock('@tazama-lf/frms-coe-lib/lib/helpers/protobuf', () => ({

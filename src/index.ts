@@ -5,6 +5,7 @@ import { additionalEnvironmentVariables, type Configuration } from './config';
 import { validateProcessorConfig } from '@tazama-lf/frms-coe-lib/lib/config/processor.config';
 import { NatsRelay } from '@tazama-lf/frms-coe-startup-lib/lib/services/natsRelayService';
 import { RestRelay } from '@tazama-lf/frms-coe-startup-lib/lib/services/restRelayService';
+import { GoogleRelay } from '@tazama-lf/frms-coe-startup-lib/lib/services/GoogleBucketsService';
 import { RabbitRelay } from '@tazama-lf/frms-coe-startup-lib/lib/services/rabbitMQRelayService';
 import { type IRelay } from '@tazama-lf/frms-coe-startup-lib/lib/interfaces/iRelayService';
 import { execute } from './services/execute';
@@ -35,12 +36,33 @@ async function startRelayServices(): Promise<void> {
       await rabbit.init({ functionName: configuration.functionName, maxCPU: configuration.maxCPU, nodeEnv: configuration.nodeEnv });
       relay = rabbit;
       break;
+    case 'google':
+      const google = new GoogleRelay();
+      await google.init();
+      relay = google;
+      break;
     default:
+      loggerService.warn('No Destination type specified.');
       break;
   }
+
   /* eslint-enable no-case-declarations -- reenable */
   if (configuration.nodeEnv !== 'test') {
-    await relayService.init(execute, loggerService);
+    let isConnected = false;
+    for (let retryCount = 0; retryCount < 10; retryCount++) {
+      loggerService.log('Connecting to nats server...');
+      if (!(await relayService.init(execute, loggerService))) {
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+      } else {
+        loggerService.log('Connected to nats');
+        isConnected = true;
+        break;
+      }
+    }
+
+    if (!isConnected) {
+      throw new Error('Unable to connect to nats after 10 retries');
+    }
   }
 }
 
