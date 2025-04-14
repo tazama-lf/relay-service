@@ -146,6 +146,8 @@ The service can be configured using the following environment variables:
 | LOGSTASH_LEVEL   | Log level                                                                                    |
 | SIDECAR_HOST     | Address that the [event sidecar](https://github.com/tazama-lf/event-sidecar) is listening on |
 
+*Note: Even though PRODUCER_STREAM is only used by the nats relay, it is still required due to the fact the service is using nats to receive messages. This can be left at a default string.
+
 ## **_4. Deployment Guide_**
 
 - ### **Pre-requisites:**
