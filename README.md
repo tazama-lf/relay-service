@@ -37,7 +37,7 @@ This service acts as an intermediary, reading messages from a NATS server and fo
 ### 1.2 Features
 
 - Consumes NATS messages
-- Compatible with various output destinations: RabbitMQ, REST API, and NATS
+- Compatible with various output destinations: RabbitMQ, REST API, Google Cloud Buckets and NATS
 - Built using TypeScript for enhanced type safety and maintainability
 - Designed specifically for financial risk management and transaction processing scenarios
 
@@ -61,20 +61,20 @@ This function acts as the central hub for message forwarding. It determines the 
 
 This section provides an overview of how the Relay Service interacts with different components in the Tazama ecosystem. The diagrams illustrate the flow of messages from TazamaTP and TazamaTADP through the Relay Service to various destinations, such as NATS, RabbitMQ, or REST APIs.
 
-### 2.1 Relay Service to NATS / RabbitMQ / REST API for TazamaTP
+### 2.1 Relay Service to NATS / RabbitMQ / REST API / Google Cloud Buckets for TazamaTP
 
 ```mermaid
 stateDiagram
     TazamaTP --> RelayService: Sends message to NATS Subject (Interdiction Service)
-    RelayService --> Destination: Sends message to Destination i.e. NATS / RabbitMQ / REST API
+    RelayService --> Destination: Sends message to Destination i.e. NATS / RabbitMQ / REST API / Google Cloud Buckets 
 ```
 
-### 2.2 Relay Service to NATS / RabbitMQ / REST API for TazamaTADP
+### 2.2 Relay Service to NATS / RabbitMQ / REST API / Google Cloud Buckets for TazamaTADP
 
 ```mermaid
 stateDiagram
     TazamaTADP --> RelayService: Sends message to NATS Subject (CMS)
-    RelayService --> Destination: Sends message to Destination i.e. NATS / RabbitMQ / REST API
+    RelayService --> Destination: Sends message to Destination i.e. NATS / RabbitMQ / REST API / Google Cloud Buckets 
 ```
 
 ## **_3. Configuration_**
@@ -122,6 +122,14 @@ The service can be configured using the following environment variables:
 | JSON_PAYLOAD     | Delivery message as JSON (true/false)          |
 | MAX_SOCKETS      | Max http/https sockets limit (2500 by default) |
 
+4. #### Google Cloud Buckets Variables
+
+| Variable         | Description                                     |
+| ---------------- | ----------------------------------------------- |
+| DESTINATION_TYPE | google                                          |
+| GOOGLE_BUCKET_NAME | Name for the destination bucket               |
+| GOOGLE_APPLICATION_CREDENTIALS | Path to the service-account file. |
+
 - ### APM Configuration
 
 | Variable          | Description                                    |
@@ -137,6 +145,8 @@ The service can be configured using the following environment variables:
 | ---------------  | ----------------------------------------------                                               |
 | LOGSTASH_LEVEL   | Log level                                                                                    |
 | SIDECAR_HOST     | Address that the [event sidecar](https://github.com/tazama-lf/event-sidecar) is listening on |
+
+*Note: Even though PRODUCER_STREAM is only used by the nats relay, it is still required due to the fact the service is using nats to receive messages. This can be left at a default string.
 
 ## **_4. Deployment Guide_**
 
