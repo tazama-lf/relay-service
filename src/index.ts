@@ -5,7 +5,7 @@ import { additionalEnvironmentVariables, type Configuration } from './config';
 import { validateProcessorConfig } from '@tazama-lf/frms-coe-lib/lib/config/processor.config';
 import { NatsRelay } from '@tazama-lf/frms-coe-startup-lib/lib/services/natsRelayService';
 import { RestRelay } from '@tazama-lf/frms-coe-startup-lib/lib/services/restRelayService';
-import { GoogleRelay } from '@tazama-lf/frms-coe-startup-lib/lib/services/GoogleBucketsService';
+import { GoogleRelay } from '@tazama-lf/frms-coe-startup-lib/lib/services/googleBucketsService';
 import { RabbitRelay } from '@tazama-lf/frms-coe-startup-lib/lib/services/rabbitMQRelayService';
 import { type IRelay } from '@tazama-lf/frms-coe-startup-lib/lib/interfaces/iRelayService';
 import { execute } from './services/execute';
