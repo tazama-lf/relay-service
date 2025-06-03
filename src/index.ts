@@ -7,6 +7,7 @@ import { NatsRelay } from '@tazama-lf/frms-coe-startup-lib/lib/services/natsRela
 import { RestRelay } from '@tazama-lf/frms-coe-startup-lib/lib/services/restRelayService';
 import { GoogleRelay } from '@tazama-lf/frms-coe-startup-lib/lib/services/googleBucketsService';
 import { RabbitRelay } from '@tazama-lf/frms-coe-startup-lib/lib/services/rabbitMQRelayService';
+import { BigQueryRelay } from '@tazama-lf/frms-coe-startup-lib/lib/services/bigQueryRelayService';
 import { type IRelay } from '@tazama-lf/frms-coe-startup-lib/lib/interfaces/iRelayService';
 import { execute } from './services/execute';
 import { LoggerService } from '@tazama-lf/frms-coe-lib';
@@ -40,6 +41,11 @@ async function startRelayServices(): Promise<void> {
       const google = new GoogleRelay();
       await google.init();
       relay = google;
+      break;
+    case 'bigQuery':
+      const bigQuery = new BigQueryRelay();
+      await bigQuery.init();
+      relay = bigQuery;
       break;
     default:
       loggerService.warn('No Destination type specified.');
