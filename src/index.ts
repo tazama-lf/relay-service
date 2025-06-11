@@ -14,7 +14,7 @@ export let transport: ITransport;
 
 async function startRelayServices(): Promise<void> {
   const relayService = new StartupFactory();
-  loggerService.log(`${configuration.DESTINATION_TRANSPORT_URL}`, 'index');
+  loggerService.log(`${configuration.DESTINATION_TRANSPORT_TYPE}`, 'index');
   transport = await initTransport(configuration, loggerService);
 
   if (configuration.nodeEnv !== 'test') {

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { execSync } from 'child_process';
 import { loggerService } from '..';
 

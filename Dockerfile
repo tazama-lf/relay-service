@@ -24,14 +24,14 @@ RUN npm run build
 # Environment variables (May require changes based on requirements)
 ENV STARTUP_TYPE=nats
 ENV NODE_ENV=dev
-ENV SERVER_URL=nats://host.docker.internal:4222 
+ENV SERVER_URL=nats://localhost:4222 
 ENV FUNCTION_NAME=messageRelayService
 ENV JSON_PAYLOAD=true
 ENV PRODUCER_STREAM=destination.subject
 ENV CONSUMER_STREAM=interdiction-service
 ENV DESTINATION_TRANSPORT_TYPE=@paysys-labs/nats-relay-plugin
-ENV DESTINATION_TRANSPORT_URL=tls://host.docker.internal:4223
-ENV NATS_TLS_CA=/app/nats-certs/nats-server.crt
+ENV DESTINATION_TRANSPORT_URL=nats://localhost:4223
+# ENV NATS_TLS_CA=/app/nats-certs/nats-server.crt
 # ENV QUEUE=messageRelayService
 # ENV GOOGLE_BUCKET_NAME=
 # ENV GOOGLE_APPLICATION_CREDENTIALS=serviceAccount.json

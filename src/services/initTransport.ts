@@ -28,6 +28,6 @@ export const initTransport = async (configuration: Configuration, loggerService:
     return transport;
   } catch (error) {
     loggerService.error(`Failed to initialize transport plugin: ${JSON.stringify(error)}`, 'initTransport');
-    throw error as Error; // Re-throw to ensure function doesn't return undefined
+    throw error as Error;
   }
 };
