@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 // Developed By Paysys Labs
 import type { AdditionalConfig, ProcessorConfig } from '@tazama-lf/frms-coe-lib/lib/config/processor.config';
 import * as dotenv from 'dotenv';
@@ -8,17 +9,27 @@ dotenv.config({
 });
 
 export interface ExtendedConfig {
-  DESTINATION_URL: string;
-  DESTINATION_TYPE: string;
+  SERVER_URL: string;
+  CONSUMER_STREAM: string;
+  DESTINATION_TRANSPORT_TYPE: string;
+  JSON_PAYLOAD: string;
 }
 
 export const additionalEnvironmentVariables: AdditionalConfig[] = [
   {
-    name: 'DESTINATION_TYPE',
+    name: 'SERVER_URL',
     type: 'string',
   },
   {
-    name: 'DESTINATION_URL',
+    name: 'CONSUMER_STREAM',
+    type: 'string',
+  },
+  {
+    name: 'DESTINATION_TRANSPORT_TYPE',
+    type: 'string',
+  },
+  {
+    name: 'JSON_PAYLOAD',
     type: 'string',
   },
 ];

@@ -1,0 +1,94 @@
+// Developed By Paysys Labs
+import { installTransportPlugin } from '../src/utils/installTransportPlugin';
+import * as childProcess from 'child_process';
+import { loggerService } from '../src/index';
+
+jest.mock('child_process', () => ({
+  execSync: jest.fn(),
+}));
+
+jest.mock('../src/index', () => ({
+  loggerService: {
+    log: jest.fn(),
+    error: jest.fn(),
+  },
+}));
+
+describe('Transport Plugin Utils', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.resetModules();
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  describe('installTransportPlugin', () => {
+    it('should execute npm install command for the plugin', async () => {
+      const pluginName = 'test-plugin';
+      await installTransportPlugin(pluginName);
+
+      expect(childProcess.execSync).toHaveBeenCalledWith(`npm install ${pluginName}`, { stdio: 'inherit' });
+      expect(loggerService.log).toHaveBeenCalledWith(`Installing plugin ${pluginName}`);
+    });
+
+    it('should handle errors during plugin installation', async () => {
+      const mockError = new Error('npm install failed');
+      (childProcess.execSync as jest.Mock).mockImplementation(() => {
+        throw mockError;
+      });
+
+      const pluginName = 'failing-plugin';
+      await installTransportPlugin(pluginName);
+
+      expect(console.error).toHaveBeenCalledWith(`Failed to install plugin ${pluginName}:`, expect.any(Error));
+    });
+  });
+
+  describe('loadTransportPlugin', () => {
+    const mockTransportClass = class MockTransport {
+      init() {
+        return Promise.resolve();
+      }
+      relay() {
+        return Promise.resolve();
+      }
+    };
+
+    beforeEach(() => {
+      jest.resetModules();
+
+      jest.mock('../src/utils/loadTransportPlugin', () => {
+        return {
+          loadTransportPlugin: jest.fn().mockImplementation(async (pluginName) => {
+            loggerService.log(`Loading plugin ${pluginName}`);
+            if (pluginName === 'failing-plugin') {
+              console.error(`Failed to load plugin ${pluginName}:`, new Error('Import failed'));
+              return undefined;
+            }
+            return mockTransportClass;
+          }),
+        };
+      });
+    });
+
+    it('should load transport plugin successfully', async () => {
+      const { loadTransportPlugin } = require('../src/utils/loadTransportPlugin');
+      const pluginName = 'test-plugin';
+
+      const result = await loadTransportPlugin(pluginName);
+
+      expect(loggerService.log).toHaveBeenCalledWith(`Loading plugin ${pluginName}`);
+
+      expect(result).toBe(mockTransportClass);
+    });
+
+    it('should handle errors during plugin loading', async () => {
+      const { loadTransportPlugin } = require('../src/utils/loadTransportPlugin');
+      const pluginName = 'failing-plugin';
+
+      const result = await loadTransportPlugin(pluginName);
+
+      expect(console.error).toHaveBeenCalledWith(`Failed to load plugin ${pluginName}:`, expect.any(Error));
+      expect(result).toBeUndefined();
+    });
+  });
+});

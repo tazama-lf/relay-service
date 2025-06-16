@@ -1,93 +1,67 @@
-// Developed By Paysys Labs
-import { Pacs002 } from '@tazama-lf/frms-coe-lib/lib/interfaces';
-import { relay } from '../src/index';
 import { execute } from '../src/services/execute';
+import { configuration, loggerService, transport } from '../src';
+import FRMSMessage from '@tazama-lf/frms-coe-lib/lib/helpers/protobuf';
 
-jest.mock('@tazama-lf/frms-coe-lib', () => ({
-  LoggerService: jest.fn().mockImplementation(() => ({
-    log: jest.fn(() => Promise.resolve()),
-    error: jest.fn(() => Promise.resolve()),
+jest.mock('../src', () => ({
+  configuration: { JSON_PAYLOAD: 'true', DESTINATION_TRANSPORT_TYPE: 'nats' },
+  loggerService: { log: jest.fn(), error: jest.fn() },
+  transport: { relay: jest.fn() },
+}));
+
+jest.mock('../src/apm', () => ({
+  startTransaction: jest.fn(() => ({
+    end: jest.fn(),
+  })),
+  startSpan: jest.fn(() => ({
+    end: jest.fn(),
   })),
 }));
 
-jest.mock('@tazama-lf/frms-coe-startup-lib/lib/services/natsRelayService', () => {
-  return {
-    NatsRelay: jest.fn().mockImplementation(() => {
-      return {
-        init: jest.fn(() => {}),
-        relay: jest.fn(() => {}),
-      };
-    }),
-  };
-});
+jest.mock('@tazama-lf/frms-coe-lib/lib/helpers/protobuf', () => ({
+  create: jest.fn(),
+  encode: jest.fn(() => ({ finish: jest.fn(() => Buffer.from('test')) })),
+}));
 
-jest.mock('@tazama-lf/frms-coe-startup-lib/lib/services/restRelayService', () => {
-  return {
-    RestRelay: jest.fn().mockImplementation(() => {
-      return {
-        init: jest.fn(() => {}),
-        relay: jest.fn(() => {}),
-      };
-    }),
-  };
-});
+describe('execute', () => {
+  const mockReqObj = { foo: 'bar', metaData: { traceParent: 'parent' } };
 
-jest.mock('@tazama-lf/frms-coe-startup-lib/lib/services/rabbitMQRelayService', () => {
-  return {
-    RabbitRelay: jest.fn().mockImplementation(() => {
-      return {
-        init: jest.fn(() => {}),
-        relay: jest.fn(() => {}),
-      };
-    }),
-  };
-});
-
-jest.mock('@tazama-lf/frms-coe-startup-lib/lib/services/GoogleBucketsService', () => {
-  return {
-    GoogleRelay: jest.fn().mockImplementation(() => {
-      return {
-        init: jest.fn(() => {}),
-        relay: jest.fn(() => {}),
-      };
-    }),
-  };
-});
-
-const mock = jest.createMockFromModule('@tazama-lf/frms-coe-lib/lib/helpers/protobuf');
-
-// jest.mock('@tazama-lf/frms-coe-lib/lib/helpers/protobuf', () => ({
-//     create: jest.fn().mockReturnValue(12),
-//     encode: jest.fn().mockReturnValue({
-//       finish: jest.fn()
-//     }),
-// }));
-
-const getMockTransaction = () => {
-  const jquote = JSON.parse(
-    '{"TxTp":"pacs.002.001.12","FIToFIPmtSts":{"GrpHdr":{"MsgId":"30bea71c5a054978ad0da7f94b2a40e9789","CreDtTm":"${new Date().toISOString()}"},"TxInfAndSts":{"OrgnlInstrId":"5ab4fc7355de4ef8a75b78b00a681ed2255","OrgnlEndToEndId":"2c516801007642dfb89294dde","TxSts":"ACCC","ChrgsInf":[{"Amt":{"Amt":307.14,"Ccy":"USD"},"Agt":{"FinInstnId":{"ClrSysMmbId":{"MmbId":"dfsp001"}}}},{"Amt":{"Amt":153.57,"Ccy":"USD"},"Agt":{"FinInstnId":{"ClrSysMmbId":{"MmbId":"dfsp001"}}}},{"Amt":{"Amt":30.71,"Ccy":"USD"},"Agt":{"FinInstnId":{"ClrSysMmbId":{"MmbId":"dfsp002"}}}}],"AccptncDtTm":"2021-12-03T15:24:26.000Z","InstgAgt":{"FinInstnId":{"ClrSysMmbId":{"MmbId":"dfsp001"}}},"InstdAgt":{"FinInstnId":{"ClrSysMmbId":{"MmbId":"dfsp002"}}}}}}',
-  );
-  const quote: Pacs002 = Object.assign({}, jquote);
-  return quote;
-};
-
-// Setting up suite
-describe('MessageRelayService', () => {
-  let responseSpy: jest.SpyInstance;
-
-  // Clear all mocks
-  afterEach(() => {
+  beforeEach(() => {
     jest.clearAllMocks();
+    configuration.JSON_PAYLOAD = 'true'; // default
   });
 
-  // Check for initial connection and subscription
-  it('should relay message', async () => {
-    responseSpy = jest.spyOn(relay, 'relay').mockImplementation((response: unknown, subject?: string[] | undefined) => {
-      return Promise.resolve();
+  it('logs execution', async () => {
+    await execute(mockReqObj);
+    expect(loggerService.log).toHaveBeenCalledWith('Executing FRMS Relay Service', 'execute');
+  });
+
+  it('relays a JSON message if JSON_PAYLOAD is "true"', async () => {
+    configuration.JSON_PAYLOAD = 'true';
+    await execute(mockReqObj);
+    expect(transport.relay).toHaveBeenCalledTimes(1);
+    const bufferArg = (transport.relay as jest.Mock).mock.calls[0][0];
+    expect(bufferArg.toString()).toContain('"foo":"bar"');
+  });
+
+  it('relays a Protobuf message if JSON_PAYLOAD is "false"', async () => {
+    configuration.JSON_PAYLOAD = 'false';
+    (FRMSMessage.create as jest.Mock).mockReturnValue({});
+    (FRMSMessage.encode as jest.Mock).mockReturnValue({
+      finish: jest.fn(() => Buffer.from('test')),
     });
+    await execute(mockReqObj);
+    expect(FRMSMessage.create).toHaveBeenCalledWith(mockReqObj);
+    expect(FRMSMessage.encode).toHaveBeenCalled();
+    expect(transport.relay).toHaveBeenCalledTimes(1);
+    const bufferArg = (transport.relay as jest.Mock).mock.calls[0][0];
+    expect(bufferArg.equals(Buffer.from('test'))).toBe(true);
+  });
 
-    await execute({ transaction: getMockTransaction() });
-
-    expect(responseSpy).toHaveBeenCalledTimes(1);
+  it('logs and does not throw on error', async () => {
+    (transport.relay as jest.Mock).mockImplementation(() => {
+      throw new Error('fail!');
+    });
+    await execute(mockReqObj);
+    expect(loggerService.error).toHaveBeenCalled();
   });
 });
