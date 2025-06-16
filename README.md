@@ -444,16 +444,12 @@ This section provides guidance for developers who want to create custom transpor
 
 ### 6.1 Plugin Interface
 
-All transport plugins must implement the `ITransport` interface defined in `src/interfaces/ITransportPlugin.ts`:
+All transport plugins must implement the `ITransportPlugin` interface defined in `frms-coe-lib`:
 
 ```typescript
 export interface ITransport {
   init: () => Promise<void>;
   relay: (data: Uint8Array | string) => Promise<void>;
-}
-
-export interface ITransportClass {
-  new (loggerService: LoggerService | Console, apm: Apm): ITransport;
 }
 ```
 
@@ -471,10 +467,10 @@ Transport plugins must meet the following requirements:
 
 ```typescript
 // example-relay-plugin/index.ts
-import { LoggerService } from '@tazama-lf/frms-coe-lib';
+import { LoggerService, ITransportPlugin } from '@tazama-lf/frms-coe-lib';
 import { Apm } from '@tazama-lf/frms-coe-lib/lib/services/apm';
 
-export default class ExampleRelayPlugin {
+export default class ExampleRelayPlugin implements ITransportPlugin {
   private loggerService: LoggerService | Console;
   private apm: Apm;
 
