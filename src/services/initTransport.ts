@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { type LoggerService } from '@tazama-lf/frms-coe-lib';
 import { type Configuration } from '../config';
 import { installTransportPlugin } from '../utils/installTransportPlugin';

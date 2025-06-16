@@ -1,10 +1,10 @@
-# **Tazama Relay Service**
+# **Tazama Relay Service (message-relay-service)**
 
 ## _Relay Service Documentation_
 
 **Table of Contents**
 
-- [**Tazama Relay Service**](#tazama-relay-service)
+- [**Tazama Relay Service (message-relay-service)**](#tazama-relay-service-message-relay-service)
   - [_Relay Service Documentation_](#relay-service-documentation)
   - [**_1. Component Overview_**](#1-component-overview)
     - [1.1 An overview of the document and its purpose](#11-an-overview-of-the-document-and-its-purpose)
@@ -47,7 +47,7 @@ This service acts as an intermediary, reading messages from a NATS server and fo
 
 - Consumes NATS messages
 - **Plugin-based transport system** for extensible destination support
-- Compatible with various output destinations through transport plugins (NATS, RabbitMQ, REST API, Google Cloud Buckets)
+- Compatible with various output destinations through transport plugins (NATS, RabbitMQ, REST API, Kafka, Google Cloud Buckets)
 - Dynamic plugin loading and installation at runtime
 - Support for both JSON and Protobuf message formats
 - Built using TypeScript for enhanced type safety and maintainability
@@ -81,7 +81,7 @@ initTransport: (configuration: Configuration, loggerService: LoggerService) => P
 
 This system:
 
-- Dynamically installs transport plugins using npm
+- Dynamically installs transport plugins using npm at runtime
 - Loads plugins at runtime based on `DESTINATION_TRANSPORT_TYPE` configuration
 - Validates plugin structure and ensures proper interface implementation
 - Supports extensible architecture for adding new transport destinations
@@ -103,7 +103,7 @@ The execute function processes incoming messages by:
 - ### Relay Message Function
 
 ```typescript
-transport.relay: (message: Uint8Array) => Promise<void>
+transport.relay: (message: Uint8Array | string) => Promise<void>
 ```
 
 This function acts as the central hub for message forwarding through the loaded transport plugin. The actual implementation depends on the specific transport plugin being used (NATS, RabbitMQ, REST API, etc.).
@@ -116,37 +116,44 @@ This section provides an overview of how the Relay Service interacts with differ
 
 ```mermaid
 graph TD
-    A[NATS Input] --> B[Relay Service]
-    B --> C[Plugin System]
-    C --> D[Transport Plugin Loader]
-    D --> E[DESTINATION_TRANSPORT_TYPE]
-    E --> F{Plugin Type}
-    F -->|@paysys-labs/nats-relay-plugin| G[NATS Transport]
-    F -->|rabbitmq-relay-plugin| H[RabbitMQ Transport]
-    F -->|rest-relay-plugin| I[REST API Transport]
-    F -->|google-cloud-plugin| J[Google Cloud Storage]
-    G --> K[NATS Destination]
-    H --> L[RabbitMQ Destination]
-    I --> M[REST API Endpoint]
-    J --> N[Google Cloud Bucket]
+  A[NATS Input] --> B[Relay Service]
+  B --> C[Plugin System]
+  C --> D[Transport Plugin Loader]
+  D --> E[DESTINATION_TRANSPORT_TYPE]
+  E --> F{Plugin Type}
+
+  F --> G["@tazama-lf/nats-relay-plugin"]
+  G --> L[NATS Destination]
+
+  F --> H["@tazama-lf/rabbitmq-relay-plugin"]
+  H --> M[RabbitMQ Destination]
+
+  F --> I["@tazama-lf/rest-relay-plugin"]
+  I --> N[REST API Endpoint]
+
+  F --> J["@tazama-lf/kafka-relay-plugin"]
+  J --> O[Kafka Destination]
+
+  F --> K["google-cloud-plugin"]
+  K --> P[Google Cloud Bucket]
 ```
 
-### 2.2 Relay Service to NATS / RabbitMQ / REST API / Google Cloud Buckets for TazamaTP
+### 2.2 Relay Service to NATS / RabbitMQ / REST API / Kafka / Google Cloud Buckets for TazamaTP
 
 ```mermaid
 stateDiagram-v2
     TazamaTP --> RelayService: Sends message to NATS Subject (Interdiction Service)
     RelayService --> PluginSystem: Load Transport Plugin
-    PluginSystem --> Destination: Forward via Plugin (NATS / RabbitMQ / REST API / Google Cloud Buckets)
+    PluginSystem --> Destination: Forward via Plugin (NATS / RabbitMQ / REST API / Kafka / Google Cloud Buckets)
 ```
 
-### 2.3 Relay Service to NATS / RabbitMQ / REST API / Google Cloud Buckets for TazamaTADP
+### 2.3 Relay Service to NATS / RabbitMQ / REST API / Kafka / Google Cloud Buckets for TazamaTADP
 
 ```mermaid
 stateDiagram-v2
     TazamaTADP --> RelayService: Sends message to NATS Subject (CMS)
     RelayService --> PluginSystem: Load Transport Plugin
-    PluginSystem --> Destination: Forward via Plugin (NATS / RabbitMQ / REST API / Google Cloud Buckets)
+    PluginSystem --> Destination: Forward via Plugin (NATS / RabbitMQ / REST API / Kafka / Google Cloud Buckets)
 ```
 
 ## **_3. Configuration_**
@@ -157,9 +164,10 @@ The service can be configured through environment variables or a configuration f
 
 The service uses a plugin-based architecture where transport destinations are implemented as npm packages. The `DESTINATION_TRANSPORT_TYPE` environment variable specifies which plugin to load:
 
-- `nats-relay-plugin` - For NATS destinations
-- `rabbitmq-relay-plugin` - For RabbitMQ destinations
-- `rest-relay-plugin` - For REST API destinations
+- `@tazama-lf/nats-relay-plugin` - For NATS destinations
+- `@tazama-lf/rabbitmq-relay-plugin` - For RabbitMQ destinations
+- `@tazama-lf/rest-relay-plugin` - For REST API destinations
+- `@tazama-lf/kafka-relay-plugin` - For Kafka destinations
 - `google-cloud-plugin` - For Google Cloud Storage destinations
 
 Plugins are automatically installed and loaded at runtime using the plugin loading system.
@@ -178,7 +186,7 @@ The service can be configured using the following environment variables:
 | FUNCTION_NAME   | Name of the function associated with the relay service | Yes      |
 | CONSUMER_STREAM | Name of the stream for the NATS consumer               | Yes      |
 | JSON_PAYLOAD    | Message format: "true" for JSON, "false" for Protobuf  | Yes      |
-| MAX_CPU         | CPU Limit for LoggerService                            | No       |
+| MAX_CPU         | CPU Limit for LoggerService                            | Yes      |
 
 - ### Transport Plugin Configuration
 
@@ -192,28 +200,43 @@ The service can be configured using the following environment variables:
 
 The following variables are specific to different transport plugins:
 
-#### 1. NATS Plugin (@paysys-labs/nats-relay-plugin)
+#### 1. NATS Plugin (@tazama-lf/nats-relay-plugin)
 
-| Variable                  | Description                                   |
-| ------------------------- | --------------------------------------------- |
-| DESTINATION_TRANSPORT_URL | NATS server URL (e.g., nats://localhost:4223) |
-| PRODUCER_STREAM           | NATS subject/stream name                      |
+| Variable                  | Description                                    |
+| ------------------------- | ---------------------------------------------- |
+| DESTINATION_TRANSPORT_URL | NATS server URL (e.g., tls://nats-server:4223) |
+| PRODUCER_STREAM           | NATS subject/stream name                       |
+| NATS_TLS_CA               | Path to TLS CA certificate file (optional)     |
 
-#### 2. RabbitMQ Plugin (rabbitmq-relay-plugin)
+#### 2. RabbitMQ Plugin (@tazama-lf/rabbitmq-relay-plugin)
 
-| Variable                  | Description                                      |
-| ------------------------- | ------------------------------------------------ |
-| DESTINATION_TRANSPORT_URL | RabbitMQ connection URL (e.g., amqp://localhost) |
-| PRODUCER_STREAM           | RabbitMQ queue name                              |
+| Variable                  | Description                                     |
+| ------------------------- | ----------------------------------------------- |
+| DESTINATION_TRANSPORT_URL | RabbitMQ connection URL (e.g., amqp://rabbitmq) |
+| PRODUCER_STREAM           | RabbitMQ queue name                             |
 
-#### 3. REST API Plugin (rest-relay-plugin)
+#### 3. REST API Plugin (@tazama-lf/rest-relay-plugin)
 
 | Variable                  | Description                                  |
 | ------------------------- | -------------------------------------------- |
 | DESTINATION_TRANSPORT_URL | REST API endpoint URL                        |
-| MAX_SOCKETS               | Max HTTP/HTTPS sockets limit (default: 2500) |
+| MAX_SOCKETS               | Max HTTP/HTTPS sockets limit (default: 50)   |
+| AUTH_HEALTH_URL           | Health check endpoint URL (optional)         |
+| AUTH_TOKEN_URL            | Authentication token endpoint URL (optional) |
+| AUTH_USERNAME             | Username for authentication (optional)       |
+| AUTH_PASSWORD             | Password for authentication (optional)       |
 
-#### 4. Google Cloud Storage Plugin (google-cloud-plugin)
+#### 4. Kafka Plugin (@tazama-lf/kafka-relay-plugin)
+
+| Variable                  | Description                                 |
+| ------------------------- | ------------------------------------------- |
+| DESTINATION_TRANSPORT_URL | Kafka broker URL (e.g., localhost:9092)     |
+| PRODUCER_STREAM           | Kafka topic name                            |
+| KAFKA_CLIENT_ID           | Kafka client identifier                     |
+| KAFKA_TLS                 | Enable TLS for Kafka (true/false)           |
+| KAFKA_TLS_CA              | Path to Kafka TLS CA certificate (optional) |
+
+#### 5. Google Cloud Storage Plugin (google-cloud-plugin)
 
 | Variable                       | Description                      |
 | ------------------------------ | -------------------------------- |
@@ -231,10 +254,10 @@ The following variables are specific to different transport plugins:
 
 - ### Logging Configuration
 
-| Variable       | Description                                                                                  |
-| -------------- | -------------------------------------------------------------------------------------------- |
-| LOGSTASH_LEVEL | Log level                                                                                    |
-| SIDECAR_HOST   | Address that the [event sidecar](https://github.com/tazama-lf/event-sidecar) is listening on |
+| Variable       | Description                                                                                                           |
+| -------------- | --------------------------------------------------------------------------------------------------------------------- |
+| LOGSTASH_LEVEL | Log level                                                                                                             |
+| SIDECAR_HOST   | Address that the [event sidecar](https://github.com/tazama-lf/event-sidecar) is listening on (default: 0.0.0.0:15000) |
 
 \*\*Note:\*\* The `PRODUCER_STREAM` variable is required even when using non-NATS destination plugins, as the service uses NATS to receive input messages. For non-NATS destinations, this can be set to any default string value.
 
@@ -242,62 +265,134 @@ The following variables are specific to different transport plugins:
 
 Here's an example `.env` configuration for using the NATS transport plugin:
 
-```bash
+```env
 # Input NATS Configuration
 STARTUP_TYPE=nats
 NODE_ENV=dev
-SERVER_URL=nats://localhost:4222
+SERVER_URL=nats:4222
 FUNCTION_NAME=messageRelayService
 CONSUMER_STREAM=interdiction-service
 JSON_PAYLOAD=true
 
 # Transport Plugin Configuration
-DESTINATION_TRANSPORT_TYPE=nats-relay-plugin
-DESTINATION_TRANSPORT_URL=nats://localhost:4223
+DESTINATION_TRANSPORT_TYPE=@tazama-lf/nats-relay-plugin
+DESTINATION_TRANSPORT_URL=tls://nats-server:4223
 PRODUCER_STREAM=destination.subject
+NATS_TLS_CA=./nats-certs/nats-server.crt
 
 # APM Configuration
 APM_ACTIVE=false
 APM_SERVICE_NAME=relay-service
+APM_URL=http://localhost:8200/
+
+# Logging Configuration
+LOGSTASH_LEVEL=info
+SIDECAR_HOST=0.0.0.0:15000
+```
+
+Here's an example configuration for using the Kafka transport plugin:
+
+```env
+# Input NATS Configuration
+STARTUP_TYPE=nats
+NODE_ENV=dev
+SERVER_URL=nats:4222
+FUNCTION_NAME=messageRelayService
+CONSUMER_STREAM=interdiction-service
+JSON_PAYLOAD=true
+
+# Kafka Transport Plugin Configuration
+DESTINATION_TRANSPORT_TYPE=@tazama-lf/kafka-relay-plugin
+DESTINATION_TRANSPORT_URL=localhost:9092
+PRODUCER_STREAM=destination.subject
+KAFKA_CLIENT_ID=relay-client
+KAFKA_TLS=false
+# KAFKA_TLS_CA=./kafka-certs/ca-cert.pem
+
+# APM Configuration
+APM_ACTIVE=false
+APM_SERVICE_NAME=relay-service
+APM_URL=http://localhost:8200/
+
+# Logging Configuration
+LOGSTASH_LEVEL=info
+SIDECAR_HOST=0.0.0.0:15000
 ```
 
 ## **_4. Deployment Guide_**
 
-- ### **Pre-requisites:**
+### **Pre-requisites:**
 
 Before starting, ensure the following is in place:
-Docker is installed on your system.
-You have access to the repository that contains the Relay Service code.
-You have `GH_TOKEN` set in your environment.
 
-- ### **Step-by-Step Deployment Instructions:**
+- Docker is installed on your system
+- Node.js (version 20 or higher) is installed
+- You have access to the repository that contains the Relay Service code
+- You have `GH_TOKEN` set in your environment for private npm packages
+
+### **Step-by-Step Deployment Instructions:**
 
 #### 1. Clone the Repository
 
-#### 2. Open your terminal and run the following command to clone the repository:
+Open your terminal and run the following command to clone the repository:
 
 ```bash
 git clone <repository-link>
+cd relay-service
+```
+
+#### 2. Install Dependencies
+
+Install the required dependencies:
+
+```bash
+npm install
 ```
 
 #### 3. Configure Environment Variables
 
-Update the environment configuration file (.env) as per your system's requirements. Make sure to correctly configure any database or service connection details.
-
-#### 4. Build the Docker Image
-
-Once the environment is configured, build the Docker image using the following command:
+Copy the `.env.template` file to `.env` and update it according to your system's requirements:
 
 ```bash
-docker compose build -t your-image-name
+cp .env.template .env
+# Edit .env with your specific configuration
 ```
 
-#### 5. Run the Docker Container
+Make sure to configure:
 
-After building the image, start the service in detached mode (in the background) using the command:
+- NATS connection details for input
+- Transport plugin type and destination details
+- APM and logging settings
+
+#### 4. Build the Application
+
+Build the TypeScript application:
 
 ```bash
-docker compose up -d your-image-name
+npm run build
+```
+
+#### 5. Run the Service
+
+##### Option A: Direct Node.js
+
+```bash
+npm start
+```
+
+##### Option B: Development Mode
+
+```bash
+npm run dev
+```
+
+##### Option C: Docker
+
+Build and run using Docker:
+
+```bash
+docker compose build
+docker compose up -d
 ```
 
 ## **_5. Running the Service_**
@@ -307,8 +402,8 @@ Once configured, the service operates through the following process:
 ### 5.1 Service Initialization
 
 1. **Plugin Loading**: The service dynamically loads the transport plugin specified by `DESTINATION_TRANSPORT_TYPE`
-2. **Plugin Installation**: If needed, the plugin is installed using npm link
-3. **Transport Initialization**: The loaded plugin is initialized with configuration and logger
+2. **Plugin Installation**: If needed, the plugin is installed using npm install at runtime
+3. **Transport Initialization**: The loaded plugin is initialized with logger and APM instances
 4. **NATS Connection**: Connection to the input NATS server with retry logic (up to 10 attempts)
 5. **Subscriber Setup**: Subscribes to the configured `CONSUMER_STREAM` for incoming messages
 
@@ -342,3 +437,95 @@ docker-compose up -d
 ```
 
 The service continues to operate until manually stopped, continuously monitoring the input source and relaying messages as they arrive through the configured transport plugin.
+
+## **_6. Transport Plugin Development_**
+
+This section provides guidance for developers who want to create custom transport plugins for the relay service.
+
+### 6.1 Plugin Interface
+
+All transport plugins must implement the `ITransport` interface defined in `src/interfaces/ITransportPlugin.ts`:
+
+```typescript
+export interface ITransport {
+  init: () => Promise<void>;
+  relay: (data: Uint8Array | string) => Promise<void>;
+}
+
+export interface ITransportClass {
+  new (loggerService: LoggerService | Console, apm: Apm): ITransport;
+}
+```
+
+### 6.2 Plugin Requirements
+
+Transport plugins must meet the following requirements:
+
+1. **Constructor**: Accept `LoggerService` and `Apm` instances as constructor parameters
+2. **Init Method**: Implement an async `init()` method for setup and connection establishment
+3. **Relay Method**: Implement an async `relay()` method that accepts `Uint8Array` or `string` data
+4. **NPM Package**: Be published as an npm package or be installable via npm
+5. **Default Export**: Export the plugin class as the default export
+
+### 6.3 Example Plugin Structure
+
+```typescript
+// example-relay-plugin/index.ts
+import { LoggerService } from '@tazama-lf/frms-coe-lib';
+import { Apm } from '@tazama-lf/frms-coe-lib/lib/services/apm';
+
+export default class ExampleRelayPlugin {
+  private loggerService: LoggerService | Console;
+  private apm: Apm;
+
+  constructor(loggerService: LoggerService | Console, apm: Apm) {
+    this.loggerService = loggerService;
+    this.apm = apm;
+  }
+
+  async init(): Promise<void> {
+    this.loggerService.log('Initializing Example Relay Plugin');
+    // Initialize connections, validate configuration, etc.
+  }
+
+  async relay(data: Uint8Array | string): Promise<void> {
+    this.loggerService.log('Relaying message via Example Plugin');
+
+    // Create APM span for tracking
+    const span = this.apm.startSpan('example-relay');
+
+    try {
+      // Implement your relay logic here
+      // Convert data as needed and send to destination
+
+      this.loggerService.log('Message relayed successfully');
+    } catch (error) {
+      this.loggerService.error('Failed to relay message', error);
+      throw error;
+    } finally {
+      span?.end();
+    }
+  }
+}
+```
+
+### 6.4 Plugin Configuration
+
+Transport plugins can access configuration through environment variables. Common patterns:
+
+- Use `DESTINATION_TRANSPORT_URL` for connection strings
+- Use `PRODUCER_STREAM` for queue/topic/subject names
+- Define plugin-specific environment variables as needed
+- Access configuration within the plugin as needed (not passed to constructor)
+
+The relay service will automatically install and load your plugin at runtime based on the `DESTINATION_TRANSPORT_TYPE` environment variable.
+
+## **_7. Contributor Information_**
+
+For contributors working on the relay service:
+
+- Follow the existing code style and linting rules
+- Ensure all tests pass before submitting changes
+- Add tests for new functionality
+- Update documentation when making changes
+- Use conventional commit messages

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { configuration, loggerService, transport } from '..';
 import apm from '../apm';
 import FRMSMessage from '@tazama-lf/frms-coe-lib/lib/helpers/protobuf';

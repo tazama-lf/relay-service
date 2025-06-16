@@ -1,9 +1,10 @@
+// SPDX-License-Identifier: Apache-2.0
 import type { LoggerService } from '@tazama-lf/frms-coe-lib';
 import { type Apm } from '@tazama-lf/frms-coe-lib/lib/services/apm';
 
 export interface ITransport {
   init: () => Promise<void>;
-  relay: (data: Uint8Array) => Promise<void>;
+  relay: (data: Uint8Array | string) => Promise<void>;
 }
 
 export interface ITransportClass {

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 // Developed By Paysys Labs
 import './apm';
 import { additionalEnvironmentVariables, type Configuration } from './config';
