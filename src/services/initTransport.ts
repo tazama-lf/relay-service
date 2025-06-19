@@ -3,10 +3,11 @@ import { type LoggerService } from '@tazama-lf/frms-coe-lib';
 import { type Configuration } from '../config';
 import { installTransportPlugin } from '../utils/installTransportPlugin';
 import { loadTransportPlugin } from '../utils/loadTransportPlugin';
-import type { ITransportClass, ITransport } from '../interfaces/ITransportPlugin';
+import type { ITransportClass } from '../interfaces/ITransportPlugin';
+import type { ITransportPlugin } from '@tazama-lf/frms-coe-lib/lib/interfaces/relay-service/ITransportPlugin';
 import apm from '../apm';
 
-export const initTransport = async (configuration: Configuration, loggerService: LoggerService | Console): Promise<ITransport> => {
+export const initTransport = async (configuration: Configuration, loggerService: LoggerService): Promise<ITransportPlugin> => {
   loggerService.log('Initializing transport plugin', 'initTransport');
 
   try {

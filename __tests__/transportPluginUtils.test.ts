@@ -39,7 +39,11 @@ describe('Transport Plugin Utils', () => {
       const pluginName = 'failing-plugin';
       await installTransportPlugin(pluginName);
 
-      expect(console.error).toHaveBeenCalledWith(`Failed to install plugin ${pluginName}:`, expect.any(Error));
+      expect(loggerService.error).toHaveBeenCalledWith(
+        `Failed to install plugin ${pluginName}:`,
+        expect.any(Error),
+        'installTransportPlugin',
+      );
     });
   });
 
@@ -61,7 +65,7 @@ describe('Transport Plugin Utils', () => {
           loadTransportPlugin: jest.fn().mockImplementation(async (pluginName) => {
             loggerService.log(`Loading plugin ${pluginName}`);
             if (pluginName === 'failing-plugin') {
-              console.error(`Failed to load plugin ${pluginName}:`, new Error('Import failed'));
+              loggerService.error(`Failed to load plugin ${pluginName}:`, new Error('Import failed'), 'loadTransportPlugin');
               return undefined;
             }
             return mockTransportClass;
@@ -87,7 +91,7 @@ describe('Transport Plugin Utils', () => {
 
       const result = await loadTransportPlugin(pluginName);
 
-      expect(console.error).toHaveBeenCalledWith(`Failed to load plugin ${pluginName}:`, expect.any(Error));
+      expect(loggerService.error).toHaveBeenCalledWith(`Failed to load plugin ${pluginName}:`, expect.any(Error), 'loadTransportPlugin');
       expect(result).toBeUndefined();
     });
   });

@@ -30,20 +30,18 @@ ENV FUNCTION_NAME=messageRelayService
 ENV JSON_PAYLOAD=true
 ENV PRODUCER_STREAM=destination.subject
 ENV CONSUMER_STREAM=interdiction-service
-ENV DESTINATION_TRANSPORT_TYPE=@paysys-labs/nats-relay-plugin
-ENV DESTINATION_TRANSPORT_URL=nats://localhost:4223
-# ENV NATS_TLS_CA=/app/nats-certs/nats-server.crt
+ENV DESTINATION_TRANSPORT_TYPE=@tazama-lf/nats-relay-plugin
 # ENV QUEUE=messageRelayService
 # ENV GOOGLE_BUCKET_NAME=
 # ENV GOOGLE_APPLICATION_CREDENTIALS=serviceAccount.json
 
-ENV APM_ACTIVE=false
+ENV APM_ACTIVE=true
 ENV APM_SERVICE_NAME=relay-service
 ENV APM_URL=http://apm-server.development.svc.cluster.local:8200/
 ENV APM_SECRET_TOKEN=
 
 ENV LOGSTASH_LEVEL='info'
-# ENV SIDECAR_HOST=0.0.0.0:5000
+ENV SIDECAR_HOST=0.0.0.0:5000
 
 # Expose the port the app runs on
 EXPOSE 3000

@@ -39,8 +39,7 @@ describe('execute', () => {
     configuration.JSON_PAYLOAD = 'true';
     await execute(mockReqObj);
     expect(transport.relay).toHaveBeenCalledTimes(1);
-    const bufferArg = (transport.relay as jest.Mock).mock.calls[0][0];
-    expect(bufferArg.toString()).toContain('"foo":"bar"');
+    expect(transport.relay).toHaveBeenCalledWith(mockReqObj);
   });
 
   it('relays a Protobuf message if JSON_PAYLOAD is "false"', async () => {

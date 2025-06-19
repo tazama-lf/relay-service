@@ -7,6 +7,6 @@ export const installTransportPlugin = async (pluginName: string): Promise<void> 
     loggerService.log(`Installing plugin ${pluginName}`);
     execSync(`npm install ${pluginName}`, { stdio: 'inherit' });
   } catch (error) {
-    console.error(`Failed to install plugin ${pluginName}:`, error);
+    loggerService.error(`Failed to install plugin ${pluginName}:`, error, 'installTransportPlugin');
   }
 };

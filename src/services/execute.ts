@@ -11,20 +11,16 @@ export const execute = async (reqObj: any): Promise<void> => {
     apmTransaction = apm.startTransaction(`relay-${configuration.DESTINATION_TRANSPORT_TYPE}`, {
       childOf: reqObj.metaData?.traceParent ?? undefined,
     });
+    const span = apm.startSpan('relay');
     if (configuration.JSON_PAYLOAD === 'false') {
-      const span = apm.startSpan('relay');
       const msgObj = FRMSMessage.create(reqObj as object);
       const msgEncoded = FRMSMessage.encode(msgObj).finish();
 
       await transport.relay(msgEncoded as Buffer);
-      span?.end();
     } else {
-      const span = apm.startSpan('relay');
-      const messageBuffer = Buffer.from(JSON.stringify(reqObj));
-
-      await transport.relay(messageBuffer);
-      span?.end();
+      await transport.relay(reqObj as Buffer);
     }
+    span?.end();
   } catch (error) {
     loggerService.error(error as Error);
   } finally {

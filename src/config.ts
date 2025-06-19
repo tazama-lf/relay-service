@@ -9,21 +9,11 @@ dotenv.config({
 });
 
 export interface ExtendedConfig {
-  SERVER_URL: string;
-  CONSUMER_STREAM: string;
   DESTINATION_TRANSPORT_TYPE: string;
   JSON_PAYLOAD: string;
 }
 
 export const additionalEnvironmentVariables: AdditionalConfig[] = [
-  {
-    name: 'SERVER_URL',
-    type: 'string',
-  },
-  {
-    name: 'CONSUMER_STREAM',
-    type: 'string',
-  },
   {
     name: 'DESTINATION_TRANSPORT_TYPE',
     type: 'string',
