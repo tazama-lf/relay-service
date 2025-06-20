@@ -109,7 +109,7 @@ execute: (reqObj: any) => Promise<void>;
 
 The execute function processes incoming messages by:
 
-- Handling both JSON and Protobuf message formats based on `JSON_PAYLOAD`
+- Handling both JSON and Protobuf message formats based on `OUTPUT_TO_JSON`
   configuration
 - Creating APM transactions for performance monitoring
 - Converting messages to appropriate format (JSON string or Protobuf buffer)
@@ -254,7 +254,7 @@ FUNCTION_NAME=messageRelayService
 CONSUMER_STREAM=interdiction-service
 PRODUCER_STREAM=destination.subject
 DESTINATION_TRANSPORT_TYPE=@tazama-lf/nats-relay-plugin
-JSON_PAYLOAD=true
+OUTPUT_TO_JSON=true
 
 # APM Configuration
 APM_ACTIVE=false
