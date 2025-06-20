@@ -41,7 +41,7 @@ ENV APM_URL=http://apm-server.development.svc.cluster.local:8200/
 ENV APM_SECRET_TOKEN=
 
 ENV LOGSTASH_LEVEL='info'
-ENV SIDECAR_HOST=0.0.0.0:5000
+ENV SIDECAR_HOST=0.0.0.0:15000
 
 # Expose the port the app runs on
 EXPOSE 3000

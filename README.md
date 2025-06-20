@@ -32,7 +32,7 @@
     - [5.1 Service Initialization](#51-service-initialization)
     - [5.2 Message Processing Flow](#52-message-processing-flow)
     - [5.3 Starting the Service](#53-starting-the-service)
-  - [**_6. Contributor Information_**](#7-contributor-information)
+  - [**_6. Contributor Information_**](#6-contributor-information)
 
 ## **_1. Component Overview_**
 
@@ -164,7 +164,7 @@ graph TD
 stateDiagram-v2
     TazamaTP --> RelayService: Sends message to NATS Subject (Interdiction Service)
     RelayService --> PluginSystem: Load Transport Plugin
-    PluginSystem --> Destination: Forward via Plugin (NATS / RabbitMQ / REST API / Kafka)
+    PluginSystem --> Destination: Forward via Plugin
 ```
 
 ### 2.3 Relay Service to NATS / RabbitMQ / REST API / Kafka for TazamaTADP
@@ -173,7 +173,7 @@ stateDiagram-v2
 stateDiagram-v2
     TazamaTADP --> RelayService: Sends message to NATS Subject (CMS)
     RelayService --> PluginSystem: Load Transport Plugin
-    PluginSystem --> Destination: Forward via Plugin (NATS / RabbitMQ / REST API / Kafka)
+    PluginSystem --> Destination: Forward via Plugin
 ```
 
 ## **_3. Configuration_**
@@ -202,38 +202,39 @@ The service can be configured using the following environment variables:
 
 - ### Core Service Variables
 
-| Variable                   | Description                                    | Required |
-| -------------------------- | ---------------------------------------------- | -------- |
-| STARTUP_TYPE               | nats                                           | Yes      |
-| NODE_ENV                   | Node.js environment (e.g., production,        | Yes      |
-|                            | development)                                   |          |
-| SERVER_URL                 | NATS server URL for input messages            | Yes      |
-| FUNCTION_NAME              | Name of the function associated with the       | Yes      |
-|                            | relay service                                  |          |
-| CONSUMER_STREAM            | Name of the stream for the NATS consumer      | Yes      |
-| PRODUCER_STREAM            | Stream/queue name for destination             | Yes      |
-|                            | (plugin-dependent)                             |          |
-| JSON_PAYLOAD               | Message format: "true" for JSON,              | Yes      |
-|                            | "false" for Protobuf                           |          |
-| DESTINATION_TRANSPORT_TYPE | NPM package name of the transport plugin      | Yes      |
-|                            | to use                                         |          |
-| MAX_CPU                    | CPU Limit for LoggerService                   | Yes      |
+| Variable                   | Description                          | Required |
+| -------------------------- | ------------------------------------ | -------- |
+| STARTUP_TYPE               | nats                                 | Yes      |
+| NODE_ENV                   | Node.js environment (e.g., prod,     | Yes      |
+|                            | dev)                                 |          |
+| SERVER_URL                 | NATS server URL for input            | Yes      |
+| FUNCTION_NAME              | Name of the function associated      | Yes      |
+|                            |                                      |          |
+| CONSUMER_STREAM            | Name of the NATS consumer            | Yes      |
+| PRODUCER_STREAM            | Stream/queue name for destination    | Yes      |
+|                            | (plugin-dependent)                   |          |
+| JSON_PAYLOAD               | Message format: "true" for JSON,     | Yes      |
+|                            | "false" for Protobuf                 |          |
+| DESTINATION_TRANSPORT_TYPE | Package name of the transport plugin | Yes      |
+|                            |                                      |          |
+| MAX_CPU                    | CPU Limit for LoggerService          | Yes      |
 
 - ### APM Configuration
 
-| Variable         | Description                       |
-| ---------------- | --------------------------------- |
+| Variable         | Description                      |
+| ---------------- | -------------------------------- |
 | APM_ACTIVE       | Enables Elastic APM (true/false) |
-| APM_SERVICE_NAME | APM Service name                  |
-| APM_URL          | APM server URL                    |
-| APM_SECRET_TOKEN | APM Secret token                  |
+| APM_SERVICE_NAME | APM Service name                 |
+| APM_URL          | APM server URL                   |
+| APM_SECRET_TOKEN | APM Secret token                 |
 
 - ### Logging Configuration
 
-| Variable       | Description                                           |
-| -------------- | ----------------------------------------------------- |
-| LOGSTASH_LEVEL | Log level                                             |
-| SIDECAR_HOST   | Address that the [event sidecar](https://github.com/tazama-lf/event-sidecar) is listening on (default: 0.0.0.0:15000) |
+| Variable       | Description                                                 |
+| -------------- | ----------------------------------------------------------- |
+| LOGSTASH_LEVEL | Log level                                                   |
+| SIDECAR_HOST   | [event sidecar](https://github.com/tazama-lf/event-sidecar) |
+|                | (default: 0.0.0.0:15000)                                    |
 
 **Note:** The `PRODUCER_STREAM` variable is required even when using
 non-NATS destination plugins, as the service uses NATS to receive input
