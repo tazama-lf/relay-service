@@ -213,7 +213,7 @@ The service can be configured using the following environment variables:
 | CONSUMER_STREAM            | Name of the NATS consumer            | Yes      |
 | PRODUCER_STREAM            | Stream/queue name for destination    | Yes      |
 |                            | (plugin-dependent)                   |          |
-| JSON_PAYLOAD               | Message format: "true" for JSON,     | Yes      |
+| OUTPUT_TO_JSON             | Message format: "true" for JSON,     | Yes      |
 |                            | "false" for Protobuf                 |          |
 | DESTINATION_TRANSPORT_TYPE | Package name of the transport plugin | Yes      |
 |                            |                                      |          |
@@ -365,7 +365,7 @@ Once configured, the service operates through the following process:
 1. **Message Reception**: Receives messages from the configured NATS subject
    (`CONSUMER_STREAM`)
 2. **Format Conversion**: Converts messages to JSON or Protobuf format based
-   on `JSON_PAYLOAD` setting
+   on `OUTPUT_TO_JSON` setting
 3. **APM Tracking**: Creates APM transactions for performance monitoring
 4. **Plugin Relay**: Forwards messages through the loaded transport plugin
 5. **Error Handling**: Logs errors and continues processing without stopping
