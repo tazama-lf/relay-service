@@ -3,7 +3,7 @@ import { configuration, loggerService, transport } from '../src';
 import FRMSMessage from '@tazama-lf/frms-coe-lib/lib/helpers/protobuf';
 
 jest.mock('../src', () => ({
-  configuration: { JSON_PAYLOAD: 'true', DESTINATION_TRANSPORT_TYPE: 'nats' },
+  configuration: { OUTPUT_TO_JSON: true, DESTINATION_TRANSPORT_TYPE: 'nats' },
   loggerService: { log: jest.fn(), error: jest.fn() },
   transport: { relay: jest.fn() },
 }));
@@ -27,7 +27,13 @@ describe('execute', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    configuration.JSON_PAYLOAD = 'true'; // default
+    configuration.OUTPUT_TO_JSON = true; // default
+
+    // Reset FRMSMessage mocks to default behavior
+    (FRMSMessage.create as jest.Mock).mockReturnValue({});
+    (FRMSMessage.encode as jest.Mock).mockReturnValue({
+      finish: jest.fn(() => Buffer.from('test')),
+    });
   });
 
   it('logs execution', async () => {
@@ -35,25 +41,29 @@ describe('execute', () => {
     expect(loggerService.log).toHaveBeenCalledWith('Executing FRMS Relay Service', 'execute');
   });
 
-  it('relays a JSON message if JSON_PAYLOAD is "true"', async () => {
-    configuration.JSON_PAYLOAD = 'true';
+  it('relays a JSON message if OUTPUT_TO_JSON is true', async () => {
+    configuration.OUTPUT_TO_JSON = true;
     await execute(mockReqObj);
     expect(transport.relay).toHaveBeenCalledTimes(1);
-    expect(transport.relay).toHaveBeenCalledWith(mockReqObj);
+    expect(transport.relay).toHaveBeenCalledWith(JSON.stringify(mockReqObj));
   });
 
-  it('relays a Protobuf message if JSON_PAYLOAD is "false"', async () => {
-    configuration.JSON_PAYLOAD = 'false';
-    (FRMSMessage.create as jest.Mock).mockReturnValue({});
+  it('relays a Protobuf message if OUTPUT_TO_JSON is false', async () => {
+    configuration.OUTPUT_TO_JSON = false;
+    const mockObj = {};
+    const mockBuffer = Buffer.from('test');
+
+    (FRMSMessage.create as jest.Mock).mockReturnValue(mockObj);
     (FRMSMessage.encode as jest.Mock).mockReturnValue({
-      finish: jest.fn(() => Buffer.from('test')),
+      finish: jest.fn(() => mockBuffer),
     });
+
     await execute(mockReqObj);
+
     expect(FRMSMessage.create).toHaveBeenCalledWith(mockReqObj);
-    expect(FRMSMessage.encode).toHaveBeenCalled();
+    expect(FRMSMessage.encode).toHaveBeenCalledWith(mockObj);
     expect(transport.relay).toHaveBeenCalledTimes(1);
-    const bufferArg = (transport.relay as jest.Mock).mock.calls[0][0];
-    expect(bufferArg.equals(Buffer.from('test'))).toBe(true);
+    expect(transport.relay).toHaveBeenCalledWith(mockBuffer);
   });
 
   it('logs and does not throw on error', async () => {

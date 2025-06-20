@@ -31,9 +31,6 @@ ENV JSON_PAYLOAD=true
 ENV PRODUCER_STREAM=destination.subject
 ENV CONSUMER_STREAM=interdiction-service
 ENV DESTINATION_TRANSPORT_TYPE=@tazama-lf/nats-relay-plugin
-# ENV QUEUE=messageRelayService
-# ENV GOOGLE_BUCKET_NAME=
-# ENV GOOGLE_APPLICATION_CREDENTIALS=serviceAccount.json
 
 ENV APM_ACTIVE=true
 ENV APM_SERVICE_NAME=relay-service

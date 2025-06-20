@@ -10,7 +10,7 @@ dotenv.config({
 
 export interface ExtendedConfig {
   DESTINATION_TRANSPORT_TYPE: string;
-  JSON_PAYLOAD: string;
+  OUTPUT_TO_JSON: boolean;
 }
 
 export const additionalEnvironmentVariables: AdditionalConfig[] = [
@@ -19,8 +19,8 @@ export const additionalEnvironmentVariables: AdditionalConfig[] = [
     type: 'string',
   },
   {
-    name: 'JSON_PAYLOAD',
-    type: 'string',
+    name: 'OUTPUT_TO_JSON',
+    type: 'boolean',
   },
 ];
 

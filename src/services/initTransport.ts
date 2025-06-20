@@ -3,7 +3,6 @@ import { type LoggerService } from '@tazama-lf/frms-coe-lib';
 import { type Configuration } from '../config';
 import { installTransportPlugin } from '../utils/installTransportPlugin';
 import { loadTransportPlugin } from '../utils/loadTransportPlugin';
-import type { ITransportClass } from '../interfaces/ITransportPlugin';
 import type { ITransportPlugin } from '@tazama-lf/frms-coe-lib/lib/interfaces/relay-service/ITransportPlugin';
 import apm from '../apm';
 
@@ -14,16 +13,9 @@ export const initTransport = async (configuration: Configuration, loggerService:
     loggerService.log(`Installing and loading transport plugin ${configuration.DESTINATION_TRANSPORT_TYPE}`, 'initTransport');
     await installTransportPlugin(configuration.DESTINATION_TRANSPORT_TYPE);
 
-    const TransportPlugin: ITransportClass = await loadTransportPlugin(configuration.DESTINATION_TRANSPORT_TYPE);
-    if (!TransportPlugin) {
+    const transport = await loadTransportPlugin(configuration.DESTINATION_TRANSPORT_TYPE, loggerService, apm);
+    if (!transport) {
       throw new Error('Transport plugin is undefined');
-    }
-
-    const transport = new TransportPlugin(loggerService, apm);
-
-    if (typeof transport.init !== 'function') {
-      loggerService.error('Invalid transport plugin: missing init method', 'initTransport');
-      throw new Error('Invalid transport plugin structure');
     }
 
     await transport.init();
