@@ -27,7 +27,7 @@ ENV STARTUP_TYPE=nats
 ENV NODE_ENV=dev
 ENV SERVER_URL=nats://localhost:4222 
 ENV FUNCTION_NAME=messageRelayService
-ENV JSON_PAYLOAD=true
+ENV OUTPUT_TO_JSON=true
 ENV PRODUCER_STREAM=destination.subject
 ENV CONSUMER_STREAM=interdiction-service
 ENV DESTINATION_TRANSPORT_TYPE=@tazama-lf/nats-relay-plugin
@@ -38,7 +38,7 @@ ENV APM_URL=http://apm-server.development.svc.cluster.local:8200/
 ENV APM_SECRET_TOKEN=
 
 ENV LOGSTASH_LEVEL='info'
-ENV SIDECAR_HOST=0.0.0.0:15000
+ENV SIDECAR_HOST=0.0.0.0:5000
 
 # Expose the port the app runs on
 EXPOSE 3000
