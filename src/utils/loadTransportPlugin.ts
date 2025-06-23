@@ -9,7 +9,7 @@ export const loadTransportPlugin = async (pluginName: string, loggerService: Log
     loggerService.log(`Loading plugin ${pluginName}`);
     const { default: moduleDefault } = await import(pluginName);
     const PluginInstance = moduleDefault.default;
-    return new PluginInstance(loggerService, apm);
+    return new PluginInstance();
   } catch (error) {
     loggerService.error(`Failed to load plugin ${pluginName}:`, error);
     throw error;

@@ -13,12 +13,12 @@ export const initTransport = async (configuration: Configuration, loggerService:
     loggerService.log(`Installing and loading transport plugin ${configuration.DESTINATION_TRANSPORT_TYPE}`, 'initTransport');
     await installTransportPlugin(configuration.DESTINATION_TRANSPORT_TYPE);
 
-    const transport = await loadTransportPlugin(configuration.DESTINATION_TRANSPORT_TYPE, loggerService, apm);
+    const transport: ITransportPlugin = await loadTransportPlugin(configuration.DESTINATION_TRANSPORT_TYPE, loggerService, apm);
     if (!transport) {
       throw new Error('Transport plugin is undefined');
     }
 
-    await transport.init();
+    await transport.init(loggerService, apm);
     return transport;
   } catch (error) {
     loggerService.error(`Failed to initialize transport plugin: ${JSON.stringify(error)}`, 'initTransport');

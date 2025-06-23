@@ -90,7 +90,7 @@ The service uses a dynamic plugin system for handling different destination
 types:
 
 ```typescript
-initTransport: (configuration: Configuration, loggerService: LoggerService) => Promise<ITransport>;
+initTransport: (configuration: Configuration, loggerService: LoggerService) => Promise<ITransportPlugin>;
 ```
 
 This system:
@@ -104,7 +104,7 @@ This system:
 - ### Execute Function
 
 ```typescript
-execute: (reqObj: any) => Promise<void>;
+execute: (reqObj: unknown) => Promise<void>;
 ```
 
 The execute function processes incoming messages by:
