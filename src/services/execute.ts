@@ -1,19 +1,36 @@
-import { configuration, loggerService, relay } from '..';
+// SPDX-License-Identifier: Apache-2.0
+import type { MetaData } from '@tazama-lf/frms-coe-lib/lib/interfaces/metaData';
+import { configuration, loggerService, transport } from '..';
 import apm from '../apm';
 import FRMSMessage from '@tazama-lf/frms-coe-lib/lib/helpers/protobuf';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- need FRMS Message object
-export const execute = async (reqObj: any): Promise<void> => {
+export const execute = async (reqObj: unknown): Promise<void> => {
   let apmTransaction = null;
+  let traceParent;
+
+  if (
+    typeof reqObj === 'object' &&
+    reqObj !== null &&
+    'metaData' in reqObj &&
+    typeof (reqObj as { metaData?: { traceParent?: string } }).metaData === 'object'
+  ) {
+    const { traceParent: tracer } = reqObj.metaData as MetaData;
+    traceParent = tracer ?? undefined;
+  }
   try {
-    apmTransaction = apm.startTransaction(`relay-${configuration.DESTINATION_TYPE}`, {
-      childOf: reqObj.metaData?.traceParent ?? undefined,
+    loggerService.log('Executing FRMS Relay Service', 'execute');
+    apmTransaction = apm.startTransaction(`relay-${configuration.DESTINATION_TRANSPORT_TYPE}`, {
+      childOf: traceParent,
     });
-    loggerService.log(`relaying to ${configuration.DESTINATION_TYPE}`, 'relay');
-    const message = FRMSMessage.create(reqObj as object);
-    const messageBuffer = FRMSMessage.encode(message).finish();
     const span = apm.startSpan('relay');
-    await relay.relay(messageBuffer);
+    if (!configuration.OUTPUT_TO_JSON) {
+      const msgObj = FRMSMessage.create(reqObj as object);
+      const msgEncoded = FRMSMessage.encode(msgObj).finish();
+
+      await transport.relay(msgEncoded as Buffer);
+    } else {
+      await transport.relay(JSON.stringify(reqObj));
+    }
     span?.end();
   } catch (error) {
     loggerService.error(error as Error);

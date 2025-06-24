@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 # Developed By Paysys Labs
 
 # Use Node.js as the base image
@@ -26,15 +27,10 @@ ENV STARTUP_TYPE=nats
 ENV NODE_ENV=dev
 ENV SERVER_URL=nats://localhost:4222 
 ENV FUNCTION_NAME=messageRelayService
+ENV OUTPUT_TO_JSON=true
 ENV PRODUCER_STREAM=destination.subject
 ENV CONSUMER_STREAM=interdiction-service
-ENV DESTINATION_TYPE=nats
-ENV DESTINATION_URL=nats://localhost:4223
-ENV QUEUE=messageRelayService
-ENV GOOGLE_BUCKET_NAME=
-ENV GOOGLE_APPLICATION_CREDENTIALS=serviceAccount.json
-ENV DATASET_ID=
-ENV TABLE_ID=
+ENV DESTINATION_TRANSPORT_TYPE=@tazama-lf/nats-relay-plugin
 
 ENV APM_ACTIVE=true
 ENV APM_SERVICE_NAME=relay-service
