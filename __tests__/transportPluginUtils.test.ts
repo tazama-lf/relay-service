@@ -1,9 +1,9 @@
 // Developed By Paysys Labs
 import { installTransportPlugin } from '../src/utils/installTransportPlugin';
-import * as childProcess from 'child_process';
+import { execSync } from 'node:child_process';
 import { loggerService } from '../src/index';
 
-jest.mock('child_process', () => ({
+jest.mock('node:child_process', () => ({
   execSync: jest.fn(),
 }));
 
@@ -24,24 +24,24 @@ describe('Transport Plugin Utils', () => {
   describe('installTransportPlugin', () => {
     it('should execute npm install command for the plugin', async () => {
       const pluginName = 'test-plugin';
-      await installTransportPlugin(pluginName);
+      installTransportPlugin(pluginName);
 
-      expect(childProcess.execSync).toHaveBeenCalledWith(`npm install ${pluginName}`, { stdio: 'inherit' });
+      expect(execSync).toHaveBeenCalledWith(`npm install ${pluginName}`, { stdio: 'inherit' });
       expect(loggerService.log).toHaveBeenCalledWith(`Installing plugin ${pluginName}`);
     });
 
     it('should handle errors during plugin installation', async () => {
-      const mockError = new Error('npm install failed');
-      (childProcess.execSync as jest.Mock).mockImplementation(() => {
+      const pluginName = 'failing-plugin';
+      const mockError = new Error(`Command failed: npm install ${pluginName}`);
+      (execSync as jest.Mock).mockImplementation(() => {
         throw mockError;
       });
 
-      const pluginName = 'failing-plugin';
-      await installTransportPlugin(pluginName);
+      installTransportPlugin(pluginName);
 
       expect(loggerService.error).toHaveBeenCalledWith(
         `Failed to install plugin ${pluginName}:`,
-        expect.any(Error),
+        Error(`Command failed: npm install ${pluginName}`),
         'installTransportPlugin',
       );
     });
