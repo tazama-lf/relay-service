@@ -5,6 +5,7 @@ import { installTransportPlugin } from '../utils/installTransportPlugin';
 import { loadTransportPlugin } from '../utils/loadTransportPlugin';
 import type { ITransportPlugin } from '@tazama-lf/frms-coe-lib/lib/interfaces/relay-service/ITransportPlugin';
 import apm from '../apm';
+import * as util from 'node:util';
 
 export const initTransport = async (configuration: Configuration, loggerService: LoggerService): Promise<ITransportPlugin> => {
   loggerService.log('Initializing transport plugin', 'initTransport');
@@ -18,7 +19,7 @@ export const initTransport = async (configuration: Configuration, loggerService:
     await transport.init(loggerService, apm);
     return transport;
   } catch (error) {
-    loggerService.error(`Failed to initialize transport plugin: ${JSON.stringify(error)}`, 'initTransport');
+    loggerService.error(`Failed to initialize transport plugin: ${util.inspect(error)}`, 'initTransport');
     throw error as Error;
   }
 };
