@@ -22,7 +22,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@tazama-lf/frms-coe-lib": "5.1.0-rc.2",
+    "@tazama-lf/frms-coe-lib": "^5.1.0-rc.6",
     "@tazama-lf/frms-coe-startup-lib": "2.4.0-rc.2",
     "amqplib": "^0.10.8",
     "axios": "^1.10.0",
