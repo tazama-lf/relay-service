@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
-import { execSync } from 'child_process';
+import { execSync } from 'node:child_process';
 import { loggerService } from '..';
 
-export const installTransportPlugin = async (pluginName: string): Promise<void> => {
+export const installTransportPlugin = (pluginName: string): void => {
   try {
     loggerService.log(`Installing plugin ${pluginName}`);
     execSync(`npm install ${pluginName}`, { stdio: 'inherit' });

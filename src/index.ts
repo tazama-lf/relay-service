@@ -6,6 +6,7 @@ import { validateProcessorConfig } from '@tazama-lf/frms-coe-lib/lib/config/proc
 import { initTransport } from './services/initTransport';
 import type { ITransportPlugin } from '@tazama-lf/frms-coe-lib/lib/interfaces/relay-service/ITransportPlugin';
 import { execute } from './services/execute';
+import { setTimeout } from 'node:timers/promises';
 import { StartupFactory } from '@tazama-lf/frms-coe-startup-lib';
 import { LoggerService } from '@tazama-lf/frms-coe-lib';
 
@@ -16,15 +17,15 @@ export let transport: ITransportPlugin;
 async function startRelayServices(): Promise<void> {
   try {
     const relayService = new StartupFactory();
-    loggerService.log(`${configuration.DESTINATION_TRANSPORT_TYPE}`, 'index');
+    loggerService.log(configuration.DESTINATION_TRANSPORT_TYPE, 'index');
     transport = await initTransport(configuration, loggerService);
-
+    const retryStrategy = { retry: 10, delay: 5000 };
     if (configuration.nodeEnv !== 'test') {
       let isConnected = false;
-      for (let retryCount = 0; retryCount < 10; retryCount++) {
+      for (let retryCount = 0; retryCount < retryStrategy.retry; retryCount++) {
         loggerService.log('Connecting to nats server...', 'startRelayServices');
         if (!(await relayService.init(execute, loggerService))) {
-          await new Promise((resolve) => setTimeout(resolve, 5000));
+          await setTimeout(retryStrategy.delay);
         } else {
           loggerService.log('Connected to nats');
           isConnected = true;
