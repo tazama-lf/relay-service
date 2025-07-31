@@ -1,8 +1,12 @@
 {
   "name": "message-relay-service",
   "version": "2.2.0",
-  "description": "",
+  "description": "Tazama relay service wrapper for point-to-point message relay",
   "main": "src/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tazama-lf/relay-service.git"
+  },
   "scripts": {
     "start": "node -r dotenv/config dist/index.js",
     "clean": "npx rimraf build node_modules coverage package-lock.json",
