@@ -188,10 +188,14 @@ The service uses a plugin-based architecture where transport destinations
 are implemented as npm packages. The `DESTINATION_TRANSPORT_TYPE`
 environment variable specifies which plugin to load:
 
-- `@tazama-lf/nats-relay-plugin` - For NATS destinations
-- `@tazama-lf/rabbitmq-relay-plugin` - For RabbitMQ destinations
-- `@tazama-lf/rest-relay-plugin` - For REST API destinations
-- `@tazama-lf/kafka-relay-plugin` - For Kafka destinations
+ - KAFKA - https://github.com/tazama-lf/relay-service-integration-kafka
+    - `DESTINATION_TRANSPORT_TYPE = @tazama-lf/kafka-relay-plugin`
+ - NATS - https://github.com/tazama-lf/relay-service-integration-nats
+    - `DESTINATION_TRANSPORT_TYPE = @tazama-lf/nats-relay-plugin`
+ - RABBIT MQ - https://github.com/tazama-lf/relay-service-integration-rabbitmq
+    - `DESTINATION_TRANSPORT_TYPE = @tazama-lf/rabbitmq-relay-plugin`
+ - REST API - https://github.com/tazama-lf/relay-service-integration-rest
+    - `DESTINATION_TRANSPORT_TYPE = @tazama-lf/rest-relay-plugin`
 
 Plugins are automatically installed and loaded at runtime using the plugin
 loading system.
