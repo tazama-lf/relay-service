@@ -13,8 +13,8 @@ WORKDIR /app
 COPY package*.json ./
 COPY .npmrc .npmrc
 
-# Install dependencies
-RUN npm install
+# Install dependencies, including the Kafka relay plugin
+RUN npm install && npm install @tazama-lf/kafka-relay-plugin
 
 # Copy the rest of the application code to the container
 COPY . .
@@ -25,12 +25,19 @@ RUN npm run build
 # Environment variables (May require changes based on requirements)
 ENV STARTUP_TYPE=nats
 ENV NODE_ENV=dev
-ENV SERVER_URL=nats://localhost:4222 
+ENV SERVER_URL=localhost:9092 
 ENV FUNCTION_NAME=messageRelayService
 ENV OUTPUT_TO_JSON=true
 ENV PRODUCER_STREAM=destination.subject
 ENV CONSUMER_STREAM=interdiction-service
-ENV DESTINATION_TRANSPORT_TYPE=@tazama-lf/nats-relay-plugin
+ENV DESTINATION_TRANSPORT_TYPE=@tazama-lf/kafka-relay-plugin
+
+# Kafka-specific env vars
+ENV KAFKA_DESTINATION_TRANSPORT_URL=localhost:9092
+ENV KAFKA_PRODUCER_STREAM=example.subject
+ENV KAFKA_TLS_CA=/path/to/ca.pem
+ENV KAFKA_CLIENT_ID=your-client-id
+ENV KAFKA_MAX_IN_FLIGHT_REQUESTS=5
 
 ENV APM_ACTIVE=true
 ENV APM_SERVICE_NAME=relay-service

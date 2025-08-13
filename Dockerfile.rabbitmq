@@ -13,8 +13,8 @@ WORKDIR /app
 COPY package*.json ./
 COPY .npmrc .npmrc
 
-# Install dependencies
-RUN npm install
+# Install dependencies, including the NATS relay plugin
+RUN npm install && npm install @tazama-lf/rabbitmq-relay-plugin
 
 # Copy the rest of the application code to the container
 COPY . .
@@ -23,14 +23,18 @@ COPY . .
 RUN npm run build
 
 # Environment variables (May require changes based on requirements)
-ENV STARTUP_TYPE=nats
+ENV STARTUP_TYPE=rabbitmq
 ENV NODE_ENV=dev
-ENV SERVER_URL=nats://localhost:4222 
+ENV SERVER_URL=amqp://localhost:5672
 ENV FUNCTION_NAME=messageRelayService
 ENV OUTPUT_TO_JSON=true
 ENV PRODUCER_STREAM=destination.subject
 ENV CONSUMER_STREAM=interdiction-service
-ENV DESTINATION_TRANSPORT_TYPE=@tazama-lf/nats-relay-plugin
+ENV DESTINATION_TRANSPORT_TYPE=@tazama-lf/rabbitmq-relay-plugin
+
+# Rabbitmq plugin-specific env vars (defaults from README; override as needed)
+ENV DESTINATION_TRANSPORT_URL=amqp://localhost:5672
+ENV PRODUCER_STREAM=my-queue
 
 ENV APM_ACTIVE=true
 ENV APM_SERVICE_NAME=relay-service
