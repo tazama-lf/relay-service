@@ -29,7 +29,7 @@
     "@tazama-lf/frms-coe-lib": "5.1.0",
     "@tazama-lf/frms-coe-startup-lib": "2.4.0",
     "amqplib": "^0.10.8",
-    "axios": "^1.10.0",
+    "axios": "^1.12.2",
     "dotenv": "^17.2.0",
     "nats": "^2.29.3",
     "tslib": "^2.8.1"
