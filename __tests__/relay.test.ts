@@ -56,7 +56,7 @@ describe('execute', () => {
     expect(transport.relay).toHaveBeenCalledWith(mockBuffer);
   });
 
-  it('throws if createMessageBuffer returns undefined', async () => {
+  it('logs error and does not relay if createMessageBuffer returns undefined', async () => {
     configuration.OUTPUT_TO_JSON = false;
     (protobuf.createMessageBuffer as jest.Mock).mockReturnValue(undefined);
 
