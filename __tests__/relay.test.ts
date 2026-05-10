@@ -1,6 +1,6 @@
 import { execute } from '../src/services/execute';
 import { configuration, loggerService, transport } from '../src';
-import FRMSMessage from '@tazama-lf/frms-coe-lib/lib/helpers/protobuf';
+import * as protobuf from '@tazama-lf/frms-coe-lib/lib/helpers/protobuf';
 
 jest.mock('../src', () => ({
   configuration: { OUTPUT_TO_JSON: true, DESTINATION_TRANSPORT_TYPE: 'nats' },
@@ -18,8 +18,7 @@ jest.mock('../src/apm', () => ({
 }));
 
 jest.mock('@tazama-lf/frms-coe-lib/lib/helpers/protobuf', () => ({
-  create: jest.fn(),
-  encode: jest.fn(() => ({ finish: jest.fn(() => Buffer.from('test')) })),
+  createMessageBuffer: jest.fn(),
 }));
 
 describe('execute', () => {
@@ -29,11 +28,8 @@ describe('execute', () => {
     jest.clearAllMocks();
     configuration.OUTPUT_TO_JSON = true; // default
 
-    // Reset FRMSMessage mocks to default behavior
-    (FRMSMessage.create as jest.Mock).mockReturnValue({});
-    (FRMSMessage.encode as jest.Mock).mockReturnValue({
-      finish: jest.fn(() => Buffer.from('test')),
-    });
+    // Default: createMessageBuffer returns a valid buffer
+    (protobuf.createMessageBuffer as jest.Mock).mockReturnValue(Buffer.from('test'));
   });
 
   it('logs execution', async () => {
@@ -50,20 +46,24 @@ describe('execute', () => {
 
   it('relays a Protobuf message if OUTPUT_TO_JSON is false', async () => {
     configuration.OUTPUT_TO_JSON = false;
-    const mockObj = {};
     const mockBuffer = Buffer.from('test');
-
-    (FRMSMessage.create as jest.Mock).mockReturnValue(mockObj);
-    (FRMSMessage.encode as jest.Mock).mockReturnValue({
-      finish: jest.fn(() => mockBuffer),
-    });
+    (protobuf.createMessageBuffer as jest.Mock).mockReturnValue(mockBuffer);
 
     await execute(mockReqObj);
 
-    expect(FRMSMessage.create).toHaveBeenCalledWith(mockReqObj);
-    expect(FRMSMessage.encode).toHaveBeenCalledWith(mockObj);
+    expect(protobuf.createMessageBuffer).toHaveBeenCalledWith(mockReqObj);
     expect(transport.relay).toHaveBeenCalledTimes(1);
     expect(transport.relay).toHaveBeenCalledWith(mockBuffer);
+  });
+
+  it('logs error and does not relay if createMessageBuffer returns undefined', async () => {
+    configuration.OUTPUT_TO_JSON = false;
+    (protobuf.createMessageBuffer as jest.Mock).mockReturnValue(undefined);
+
+    await execute(mockReqObj);
+
+    expect(transport.relay).not.toHaveBeenCalled();
+    expect(loggerService.error).toHaveBeenCalled();
   });
 
   it('logs and does not throw on error', async () => {
