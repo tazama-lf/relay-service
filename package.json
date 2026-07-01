@@ -1,6 +1,6 @@
 {
   "name": "message-relay-service",
-  "version": "4.0.0-rc.1",
+  "version": "4.0.0-rc.2",
   "description": "Tazama relay service wrapper for point-to-point message relay",
   "main": "src/index.js",
   "repository": {
@@ -26,8 +26,8 @@
   "author": "Tazama.org",
   "license": "Apache-2.0",
   "dependencies": {
-    "@tazama-lf/frms-coe-lib": "8.0.0-rc.3",
-    "@tazama-lf/frms-coe-startup-lib": "3.0.2-rc.5",
+    "@tazama-lf/frms-coe-lib": "8.2.0-rc.6",
+    "@tazama-lf/frms-coe-startup-lib": "3.1.0-rc.8",
     "amqplib": "^0.10.8",
     "axios": "^1.12.1",
     "dotenv": "^17.2.0",
@@ -48,7 +48,6 @@
     "husky": "^9.1.7",
     "jest": "^30.0.4",
     "lint-staged": "^16.1.2",
-    "newman": "^6.2.1",
     "nodemon": "^3.1.10",
     "prettier": "^3.6.2",
     "ts-jest": "^29.4.0",
@@ -60,5 +59,9 @@
       "eslint --fix",
       "prettier --write"
     ]
+  },
+  "overrides": {
+    "uuid": "^11.1.1",
+    "@opentelemetry/core": "^2.8.0"
   }
 }
