@@ -1,10 +1,10 @@
+# syntax=docker/dockerfile:1
 # SPDX-License-Identifier: Apache-2.0
 # Developed By Paysys Labs
 
 # Use Node.js as the base image
 FROM node:20-alpine
 
-ARG GH_TOKEN
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -14,7 +14,7 @@ COPY package*.json ./
 COPY .npmrc .npmrc
 
 # Install dependencies
-RUN npm install
+RUN --mount=type=secret,id=GH_TOKEN,env=GH_TOKEN npm install
 
 # Copy the rest of the application code to the container
 COPY . .

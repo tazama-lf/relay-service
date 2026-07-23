@@ -2,7 +2,7 @@
 import type { MetaData } from '@tazama-lf/frms-coe-lib/lib/interfaces/metaData';
 import { configuration, loggerService, transport } from '..';
 import apm from '../apm';
-import FRMSMessage from '@tazama-lf/frms-coe-lib/lib/helpers/protobuf';
+import { createMessageBuffer } from '@tazama-lf/frms-coe-lib/lib/helpers/protobuf';
 
 export const execute = async (reqObj: unknown): Promise<void> => {
   let apmTransaction = null;
@@ -24,10 +24,9 @@ export const execute = async (reqObj: unknown): Promise<void> => {
     });
     const span = apm.startSpan('relay');
     if (!configuration.OUTPUT_TO_JSON) {
-      const msgObj = FRMSMessage.create(reqObj as object);
-      const msgEncoded = FRMSMessage.encode(msgObj).finish();
-
-      await transport.relay(msgEncoded as Buffer);
+      const messageBuffer = createMessageBuffer(reqObj as Record<string, unknown>);
+      if (!messageBuffer) throw new Error('Failed to encode message for relay');
+      await transport.relay(messageBuffer);
     } else {
       await transport.relay(JSON.stringify(reqObj));
     }
