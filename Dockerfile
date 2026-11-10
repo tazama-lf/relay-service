@@ -3,7 +3,7 @@
 # Developed By Paysys Labs
 
 # Use Node.js as the base image
-FROM node:20-alpine
+FROM node:24-alpine
 
 
 # Set the working directory inside the container
