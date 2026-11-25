@@ -14,7 +14,11 @@ export const initTransport = async (configuration: Configuration, loggerService:
     loggerService.log(`Installing and loading transport plugin ${configuration.DESTINATION_TRANSPORT_TYPE}`, 'initTransport');
     installTransportPlugin(configuration.DESTINATION_TRANSPORT_TYPE);
 
-    const transport: ITransportPlugin = await loadTransportPlugin(configuration.DESTINATION_TRANSPORT_TYPE, loggerService, apm);
+    // for when a specific version is specified in the transport's package name
+    const pluginSpec = configuration.DESTINATION_TRANSPORT_TYPE;
+    const versionSeparator = pluginSpec.lastIndexOf('@');
+    const pluginName = versionSeparator > 0 ? pluginSpec.slice(0, versionSeparator) : pluginSpec;
+    const transport: ITransportPlugin = await loadTransportPlugin(pluginName, loggerService, apm);
 
     await transport.init(loggerService, apm);
     return transport;

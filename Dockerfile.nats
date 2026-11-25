@@ -35,8 +35,16 @@ ENV DESTINATION_TRANSPORT_TYPE=@tazama-lf/nats-relay-plugin
 # NATS plugin-specific env vars (defaults from README; override as needed)
 ENV DESTINATION_TRANSPORT_URL=tls://localhost:4223
 ENV PRODUCER_STREAM=example.subject
-# Update with actual path below or volume mount for production
-ENV NATS_TLS_CA=/path/to/ca.pem  
+# Update with actual path below or volume mount for production 
+ENV NATS_AUTHENTICATED=true
+ENV NATS_CERTIFICATE_AUTHORITY_PATH=/path/to/ca.pem
+ENV NATS_CLIENT_CERT_PATH=/path/to/client-cert.pem
+ENV NATS_CLIENT_KEY_PATH=/path/to/client-key.pem
+
+ENV DESTINATION_NATS_AUTHENTICATED=true
+ENV DESTINATION_NATS_CERTIFICATE_AUTHORITY_PATH=/path/to/ca.pem
+ENV DESTINATION_NATS_CLIENT_CERT_PATH=/path/to/client-cert.pem
+ENV DESTINATION_NATS_CLIENT_KEY_PATH=/path/to/client-key.pem
 
 ENV APM_ACTIVE=true
 ENV APM_SERVICE_NAME=relay-service

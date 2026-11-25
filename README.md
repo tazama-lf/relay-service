@@ -200,6 +200,10 @@ environment variable specifies which plugin to load:
 Plugins are automatically installed and loaded at runtime using the plugin
 loading system.
 
+To select a specific version, include it in the environment variable, for
+example `DESTINATION_TRANSPORT_TYPE=@tazama-lf/nats-relay-plugin@1.0.0`.
+Startup installs that version and imports the plugin by its package name.
+
 - ## _Environment Variables_
 
 The service can be configured using the following environment variables:
